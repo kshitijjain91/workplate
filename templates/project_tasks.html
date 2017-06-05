@@ -1,0 +1,401 @@
+{% extends "header.html" %}
+
+
+{% block body %}
+
+                <div id="myTabContent" class="tab-content">
+
+                    <!-- first tab content-->
+                    <div class="container-fluid tab-pane fade active in" id="firsttab">
+
+                        {% if project_id is not none %}
+                        <div class="container-fluid">
+                          <!-- inline form -->
+                          <form class="form-inline" action="{{ url_for('new_task', project_id = project_id) }}" method="POST" enctype="multipart/form-data">
+
+                          <h4>Add a new task</h4>
+                            <div class="form-group" >
+                              <select class="selectpicker show-menu-arrow show-tick"
+                                  title="Assign to" data-width="200px;" data-style="btn-default"
+                                  data-live-search="true" name="assigned_to" required>
+
+                                    {% for username in users_in_project %}
+                                      <option>{{username[0]}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                              <input type="text" class="form-control" id="exampleInputEmail2" placeholder="Description"
+                              style="width: 450px;" name="task_description" required>
+                            </div>
+                            <div class="form-group">
+                              <div class="input-group date form_date" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+                                            <input class="form-control" size="20" placeholder="Due date" type="text" readonly required>
+                                            <!-- <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span> -->
+                                            <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                              </div>
+                              <input type="hidden" id="dtp_input2" name="due_date" style="width: 100px;"><br/>
+                            </div>
+                            <span style="display: inline-block; width: 30px;"></span>
+                            <button type="submit" class="btn btn-success">
+                          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                          Add Task
+                          </button>
+
+                          </form>
+                          <!-- inline form -->
+                        </div>
+                        {% endif %}
+
+                        <br><br>
+
+                        <div class="container-fluid">
+                          <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+
+                                <div class="panel panel-default" style="border-width: 0;">
+                                  <div class="panel-heading" role="tab" id="headingOne">
+                                    <h4 class="panel-title">
+                                      <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                        Overdue
+                                        <span class="label label-danger label-as-badge" style="border-radius: 1em;">{{task_list_overdue|length}}</span></a>
+                                      </a>
+                                    </h4>
+                                  </div>
+
+                                  <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                                    <div class="panel-body">
+
+                                    {% for task in task_list_overdue %}
+                                      <div class="row">
+                                        <div class="col-md-2">
+                                        {{task[5]}}
+                                        </div>
+                                        <div class="col-md-8">
+                                          <p>{{task[2]}}</p>
+                                          <p style="color: grey;">Overdue by {{overdue_by[loop.index0]}} days</p>
+                                        </div>
+                                        <div class="col-md-2">
+                                          <!-- Single button -->
+
+
+                                              <div class="btn-group">
+                                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                  Open <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done')}}">Done</a></li>
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending')}}">Pending</a></li>
+                                                  <li role="separator" class="divider"></li>
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete')}}">Delete</a></li>
+                                                </ul>
+                                              </div>
+
+                                        </div>
+                                      </div>
+                                    {% endfor %}
+
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div class="panel panel-default" style="border-width: 0;">
+                                  <div class="panel-heading" role="tab" id="headingTwo">
+                                    <h4 class="panel-title">
+                                      <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                        Due Today <span class="label label-warning label-as-badge" style="border-radius: 1em;">{{task_list_due_today|length}}</span></a>
+                                      </a>
+                                    </h4>
+                                  </div>
+
+                                  <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                                    <div class="panel-body">
+
+                                      {% for task in task_list_due_today %}
+                                      <div class="row">
+                                        <div class="col-md-2">
+                                        {{task[5]}}
+                                        </div>
+                                        <div class="col-md-8">
+                                          <p>{{ task[2] }}</p>
+                                          <p style="color: grey;">Due today</p>
+                                        </div>
+                                        <div class="col-md-2">
+                                          <!-- Single button -->
+                                              <div class="btn-group">
+                                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                  Open <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done')}}">Done</a></li>
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending')}}">Pending</a></li>
+                                                  <li role="separator" class="divider"></li>
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete')}}">Delete</a></li>
+                                                </ul>
+                                              </div>
+                                        </div>
+                                      </div>
+                                    {% endfor %}
+
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div class="panel panel-default" style="border-width: 0;">
+                                  <div class="panel-heading" role="tab" id="headingThree">
+                                    <h4 class="panel-title">
+                                      <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+                                        Due Later <span class="label label-primary label-as-badge" style="border-radius: 1em;">
+                                        {{task_list_due_later|length}}</span></a>
+                                      </a>
+                                    </h4>
+                                  </div>
+
+                                  <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                    <div class="panel-body">
+
+                                      {% for task in task_list_due_later %}
+                                      <div class="row">
+                                        <div class="col-md-2">
+                                        {{task[5]}}
+                                        </div>
+                                        <div class="col-md-8">
+                                          <p>{{task[2]}}</p>
+                                          <p style="color: grey;">Due in {{due_in[loop.index0]}} days</p>
+                                        </div>
+                                        <div class="col-md-2">
+                                          <!-- Single button -->
+                                           <div class="btn-group">
+                                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                  Open <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done')}}">Done</a></li>
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending')}}">Pending</a></li>
+                                                  <li role="separator" class="divider"></li>
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete')}}">Delete</a></li>
+                                                </ul>
+                                              </div>
+                                      </div>
+                                      </div>
+                                    {% endfor %}
+
+                                    </div>
+                                  </div>
+                                </div>
+                          </div><!-- panel-group-->
+                        </div>
+                    </div><!-- first tab content-->
+
+                    <!-- second tab content-->
+                    <div class="container-fluid tab-pane fade" id="secondtab">
+
+                      {% if project_id is not none %}
+                      <div class="container-fluid">
+                          <!-- inline form -->
+                          <form class="form-inline" action="{{ url_for('new_task', project_id = project_id) }}" method="POST" enctype="multipart/form-data">
+
+                          <h4>Add a new task</h4>
+                            <div class="form-group" >
+                              <select class="selectpicker show-menu-arrow show-tick"
+                                  title="Assign to" data-width="200px;" data-style="btn-default"
+                                  data-live-search="true" name="assigned_to" required>
+
+                                    {% for username in users_in_project %}
+                                      <option>{{username[0]}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                              <input type="text" class="form-control" id="exampl" placeholder="Description"
+                              style="width: 450px;" name="task_description" required>
+                            </div>
+                            <div class="form-group">
+                              <div class="input-group date form_date" data-date-format="dd MM yyyy" data-link-field="dtp_input" data-link-format="yyyy-mm-dd">
+                                            <input class="form-control" size="20" placeholder="Due date" type="text" readonly required>
+                                            <!-- <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span> -->
+                                            <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                              </div>
+                              <input type="hidden" id="dtp_input" name="due_date" style="width: 100px;"><br/>
+                            </div>
+                            <span style="display: inline-block; width: 30px;"></span>
+                            <button type="submit" class="btn btn-success">
+                          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                          Add Task
+                          </button>
+                          </form>
+                          <!-- inline form -->
+                      </div>
+                      {% endif %}
+
+                      <br><br><!-- break after inline form-->
+
+                      <div class="container-fluid">
+                          <div class="panel-group" id="accordion2" role="tablist" aria-multiselectable="true">
+
+                                <div class="panel panel-default" style="border-width: 0;">
+                                  <div class="panel-heading" role="tab" id="headingOne2">
+                                    <h4 class="panel-title">
+                                      <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne2" aria-expanded="true" aria-controls="collapseOne">
+                                        Overdue <span class="label label-danger label-as-badge" style="border-radius: 1em;">
+                                        {{tasks_by_you_overdue|length}}</span></a>
+                                      </a>
+                                    </h4>
+                                  </div>
+
+                                  <div id="collapseOne2" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                                    <div class="panel-body">
+
+                                    {% for task in tasks_by_you_overdue %}
+                                      <div class="row">
+                                        <div class="col-md-2">
+                                        {{task[5]}}
+                                        </div>
+                                        <div class="col-md-8">
+                                          <p>{{task[2]}}</p>
+                                          <p style="color: grey;">Overdue by {{by_you_overdue[loop.index0]}} days</p>
+                                        </div>
+                                        <div class="col-md-2">
+                                          <!-- Single button -->
+
+
+                                              <div class="btn-group">
+                                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                  Open <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done')}}">Done</a></li>
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending')}}">Pending</a></li>
+                                                  <li role="separator" class="divider"></li>
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete')}}">Delete</a></li>
+                                                </ul>
+                                              </div>
+
+                                        </div>
+                                      </div>
+                                    {% endfor %}
+
+                                    </div>
+                                  </div>
+                                </div>
+
+
+                                <div class="panel panel-default" style="border-width: 0;">
+                                  <div class="panel-heading" role="tab" id="headingTwo2">
+                                    <h4 class="panel-title">
+                                      <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo2" aria-expanded="true" aria-controls="collapseTwo2">
+                                        Due Today <span class="label label-warning label-as-badge" style="border-radius: 1em;">
+                                        {{tasks_by_you_due_today|length}}</span></a>
+                                      </a>
+                                    </h4>
+                                  </div>
+
+                                  <div id="collapseTwo2" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                                    <div class="panel-body">
+
+                                    {% for task in tasks_by_you_due_today %}
+                                      <div class="row">
+                                        <div class="col-md-2">
+                                        {{task[5]}}
+                                        </div>
+                                        <div class="col-md-8">
+                                          <p>{{task[2]}}</p>
+                                          <p style="color: grey;">Due today</p>
+                                        </div>
+                                        <div class="col-md-2">
+                                          <!-- Single button -->
+
+
+                                              <div class="btn-group">
+                                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                  Open <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done')}}">Done</a></li>
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending')}}">Pending</a></li>
+                                                  <li role="separator" class="divider"></li>
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete')}}">Delete</a></li>
+                                                </ul>
+                                              </div>
+
+                                        </div>
+                                      </div>
+                                    {% endfor %}
+
+                                    </div>
+                                  </div>
+                                </div>
+
+
+                                <!-- Due later assigned by you-->
+                                <div class="panel panel-default" style="border-width: 0;">
+
+                                  <div class="panel-heading" role="tab" id="headingThree2">
+                                    <h4 class="panel-title">
+                                      <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree2" aria-expanded="true" aria-controls="collapseThree2">
+                                        Due Later <span class="label label-primary label-as-badge" style="border-radius: 1em;">
+                                        {{tasks_by_you_due_later|length}}</span></a>
+                                      </a>
+                                    </h4>
+                                  </div>
+
+                                  <div id="collapseThree2" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree2">
+                                    <div class="panel-body">
+                                    {% for task in tasks_by_you_due_later %}
+                                      <div class="row">
+                                        <div class="col-md-2">
+                                        {{task[5]}}
+                                        </div>
+                                        <div class="col-md-8">
+                                          <p>{{task[2]}}</p>
+                                          <p style="color: grey;">Due in {{by_you_due_in[loop.index0]}} days</p>
+                                        </div>
+                                        <div class="col-md-2">
+                                          <!-- Single button -->
+
+
+                                              <div class="btn-group">
+                                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                  Open <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done')}}">Done</a></li>
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending')}}">Pending</a></li>
+                                                  <li role="separator" class="divider"></li>
+                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete')}}">Delete</a></li>
+                                                </ul>
+                                              </div>
+                                        </div>
+                                      </div>
+                                    {% endfor %}
+                                    </div>
+                                  </div>
+                                </div>
+                          </div><!-- panel group-->
+                      </div><!-- container fluid-->
+                    </div><!-- second tab content-->
+
+                    <!-- third tab content-->
+                    <div class=" container-fluid tab-pane fade" id="thirdtab">
+                          third tab!
+                    </div><!-- third tab content-->
+
+                </div><!-- myTabContent-->
+
+
+                        <script type="text/javascript">
+                          $('#accordion .panel-default').on('click', function () {
+                            $('#accordion .panel-collapse').collapse('toggle');
+                            });
+                        </script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
