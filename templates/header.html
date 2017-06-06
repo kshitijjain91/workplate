@@ -25,11 +25,13 @@
         <div id="sidebar-wrapper" style="background-color: #464646;">
             <ul class="sidebar-nav">
                 <li class="sidebar-brand">
-                <a href="{{url_for('new_project')}}" style="color: white;">Create Project</a>
+                <a href="{{url_for('new_project')}}" style="color: white;"
+                data-toggle="tooltip" title="Create a new project, add members and start assigning tasks." class="sidebar-item-link" data-placement="bottom">
+                Create Project</a>
                 </li>
                 <li>
                 {% if project_name == 'All open tasks' %}
-                <a href="{{url_for('all_project_tasks')}}" style="background-color: gray; color: white;'">All Tasks
+                <a href="{{url_for('all_project_tasks')}}" style="background-color: gray; color: white;">All Tasks
                 <!-- <span class="label label-as-badge" style="border-radius: 1em; background-color: #ffcc00; color: black;">5</span> -->
                 </a>
                 {% else %}
@@ -42,8 +44,7 @@
                 {% for project in user_projects %}
                  <li>
                     {% if project_name == project[1] %}
-                    <a href="{{ url_for('project_tasks', project_id = project[0]) }}"
-                    style="background-color: gray; color: white;">
+                    <a href="{{ url_for('project_tasks', project_id = project[0]) }}" style="background-color: gray; color: white;">
                     # {{project[1]}}
                    <!--  <span class="label label-as-badge" style="border-radius: 1em; background-color: #ffcc00; color: black;">0</span> -->
                     </a>
@@ -107,7 +108,18 @@
             <div class="container-fluid">
                 <!--  nav tabs-->
                 <ul id="mytabs" class="nav nav-tabs">
-                <h3>{{project_name}}</h3><br>
+                <h3>{{project_name}}<br>
+                {% if project_name != 'All open tasks' %}
+                <small>
+                {{users_in_project|length}} members -
+                {% for i in range(users_in_project|length - 1) %}
+                {{users_in_project[i][0]}},
+                {% endfor %}
+                {{users_in_project[users_in_project|length - 1][0]}}
+                </small>
+                {% endif %}
+                </h3>
+                <br>
                 <li role="presentation" class="active"><a href="#firsttab" data-toggle="tab">Your Tasks
                 <span class="badge">
                 {{task_list_overdue|length + task_list_due_today|length + task_list_due_later|length}}
@@ -244,6 +256,12 @@ $("ul.nav-tabs > li > a").on("shown.bs.tab", function(e) {
 // on load of the page: switch to the currently selected tab
 var hash = window.location.hash;
 $('#mytabs a[href="' + hash + '"]').tab('show');
+    </script>
+
+    <script type="text/javascript">
+        $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
     </script>
 </body>
 
