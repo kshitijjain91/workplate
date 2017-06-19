@@ -3,198 +3,271 @@
 
 {% block body %}
 
-                <div id="myTabContent" class="tab-content">
+ <div id="myTabContent" class="tab-content">
 
                     <!-- first tab content-->
-                    <div class="container-fluid tab-pane fade active in" id="firsttab">
+                <div class="container-fluid tab-pane fade" id="firsttab">
 
-                        {% if project_id is not none %}
-                        <div class="container-fluid">
-                          <!-- inline form -->
-                          <form class="form-inline" action="{{ url_for('new_task', project_id = project_id) }}" method="POST" enctype="multipart/form-data">
 
-                          <h4>Add a new task</h4>
-                            <div class="form-group" >
-                              <select class="selectpicker show-menu-arrow show-tick"
-                                  title="Assign to" data-width="200px;" data-style="btn-default"
-                                  data-live-search="true" name="assigned_to" required>
+                      <div class="container-fluid">
+                        <h4>Tasks assigned to you in <a href="#">{{project_name}}</a></h4><br>
 
-                                    {% for username in users_in_project %}
-                                      <option>{{username[0]}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                              <input type="text" class="form-control" id="exampleInputEmail2" placeholder="Description"
-                              style="width: 450px;" name="task_description" required>
-                            </div>
-                            <div class="form-group">
-                              <div class="input-group date form_date" data-date-format="dd MM yyyy" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
-                                            <input class="form-control" size="20" placeholder="Due date" type="text" readonly required>
-                                            <!-- <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span> -->
-                                            <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                        <div class="col-md-2">
+                          <ul class="nav nav-pills nav-stacked" id="assigned_to_you_tabs">
+                          <li role="presentation" class="active"><a href="#open_assigned_to_you" data-toggle="tab">
+                          Open
+                          <span class="badge">
+                          {{task_list_overdue|length + task_list_due_today|length + task_list_due_later|length}}
+                          </span>
+
+                          </a></li>
+
+                          <li role="presentation"><a href="#completed_assigned_to_you" data-toggle="tab">
+                          Completed
+                          <span class="badge">
+                          {{tasks_completed_by_you|length}}
+                          </span>
+                          </a></li>
+                          </ul>
+                        </div><!--col-md-2-->
+
+                        <!-- tab content -->
+                        <div class="tab-content">
+
+                              <!-- open overdue assigned to you tasks -->
+                              <div class="tab-pane fade active in col-md-10 column" id="open_assigned_to_you">
+
+                                <table class="table table-hover" style="table-layout: fixed;">
+                                <!-- tbody -->
+
+                                {% for task in task_list_overdue %}
+                                <!-- <div class="row"-->
+                                <tr>
+                                <!-- <ul> -->
+
+                                <td style="word-wrap: break-word; text-overflow: ellipsis; width: 80%;
+                                    overflow: hidden;" >
+                                  <div class="col-md-10">
+                                    {{task[2]}}
+                                    <br>
+                                    {{task[5]}} assigned to you<br>
+
+                                    {% if project_name == 'All tasks' %}
+                                    In {{task[6]}}<br>
+                                    {% endif %}
+
+                                    <span class="label label-danger">Overdue</span>
+                                    <span style="color: gray;">Due on {{task[4]}}</span><br>
+                                  </div>
+                                </td>
+
+
+                                  <!-- Single button -->
+                                  <td style="padding: 15px;">
+                                  <div class="col-md-2">
+                                      <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Open <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='done', tab='#firsttab')}}">Done</a></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='pending',
+                                          tab='#firsttab')}}">Pending</a></li>
+                                          <li role="separator" class="divider"></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='delete', tab='#firsttab')}}">Delete</a></li>
+                                        </ul>
+                                      </div>
+                                  </div><!-- Single button -->
+                                  </td>
+
+                                  </tr>
+                                <!-- </div> -->
+                                <!-- row end-->
+                                <!-- </ul> -->
+                                <!-- <br> -->
+                              {% endfor %}
+
+                              <!-- </tbody> -->
+
+
+
+                              <!-- due today assigned to you -->
+                              {% for task in task_list_due_today %}
+                                <!-- <div class="row"> -->
+                                <tr>
+
+                                <td style="word-wrap: break-word; text-overflow: ellipsis; width: 80%;
+                                    overflow: hidden;">
+                                  <div class="col-md-10">
+                                    {{task[2]}}<br>
+                                    {{task[5]}} assigned to you<br>
+
+                                    {% if project_name == 'All tasks' %}
+                                    In {{task[6]}}<br>
+                                    {% endif %}
+
+                                    <span class="label label-warning">Due today</span>
+                                    <span style="color: gray;">Due on {{task[4]}}</span><br>
+                                  </div>
+                                </td>
+
+
+                                  <!-- Single button -->
+                                  <td style="padding: 15px;">
+                                  <div class="col-md-2">
+                                      <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Open <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='done',
+                                          tab='#firsttab')}}">Done</a></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='pending',
+                                           tab='#firsttab')}}">Pending</a></li>
+                                          <li role="separator" class="divider"></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='delete',
+                                          tab='#firsttab')}}">Delete</a></li>
+                                        </ul>
+                                      </div>
+                                  </div><!-- Single button -->
+                                  </td>
+
+                                <!-- </div>  -->
+                                <!-- row end-->
+                                <!-- <br> -->
+                                </tr>
+                              {% endfor %}
+
+                              <!-- due today assigned to you -->
+
+                              <!-- due later assigned to you -->
+                              {% for task in task_list_due_later %}
+                                <!-- <div class="row"> -->
+                                <tr>
+
+                                <td style="word-wrap: break-word; text-overflow: ellipsis; width: 80%;
+                                    overflow: hidden;">
+                                  <div class="col-md-10">
+                                    {{task[2]}}<br>
+                                    {{task[5]}} assigned to you<br>
+
+                                    {% if project_name == 'All tasks' %}
+                                    In {{task[6]}}<br>
+                                    {% endif %}
+
+                                    <span class="label label-success">Due later</span>
+                                    <span style="color: gray;">Due on {{task[4]}}</span><br>
+                                  </div>
+                                </td>
+
+
+                                  <!-- Single button -->
+                                  <td style="padding: 15px;">
+                                  <div class="col-md-2">
+                                      <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Open <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='done',
+                                          tab='#firsttab')}}">Done</a></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='pending',
+                                          tab='#firsttab')}}">Pending</a></li>
+                                          <li role="separator" class="divider"></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='delete',
+                                          tab='#firsttab')}}">Delete</a></li>
+                                        </ul>
+                                      </div>
+                                  </div><!-- Single button -->
+                                  </td>
+                                <!-- </div>  -->
+                                <!-- row end-->
+                                <!-- <br> -->
+                                </tr>
+                              {% endfor %}
+
+                              <!-- due later assigned to you -->
+                              </table>
+
+
+
                               </div>
-                              <input type="hidden" id="dtp_input2" name="due_date" style="width: 100px;"><br/>
-                            </div>
-                            <span style="display: inline-block; width: 30px;"></span>
-                            <button type="submit" class="btn btn-success">
-                          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                          Add Task
-                          </button>
+                              <!-- open assigned to you tasks -->
 
-                          </form>
-                          <!-- inline form -->
-                        </div>
-                        {% endif %}
 
-                        <br><br>
+                              <!-- completed assigned to you tasks -->
+                              <div class="tab-pane fade col-md-10" id="completed_assigned_to_you">
 
-                        <div class="container-fluid">
-                          <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                              <table class="table table-hover" style="table-layout: fixed;">
 
-                                <div class="panel panel-default" style="border-width: 0;">
-                                  <div class="panel-heading" role="tab" id="headingOne">
-                                    <h4 class="panel-title">
-                                      <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                        Overdue
-                                        <span class="label label-danger label-as-badge" style="border-radius: 1em;">{{task_list_overdue|length}}</span></a>
-                                      </a>
-                                    </h4>
+                                <!-- all completed tasks assigned to you -->
+                                {% for task in tasks_completed_by_you %}
+                                <!-- <div class="row"> -->
+                                <tr>
+
+                                <td style="word-wrap: break-word; text-overflow: ellipsis; width: 80%;
+                                    overflow: hidden;">
+                                  <div class="col-md-10">
+                                    {{task[2]}}<br>
+                                    {{task[5]}} assigned to you<br>
+
+                                    {% if project_name == 'All tasks' %}
+                                    In {{task[7]}}<br>
+                                    {% endif %}
+
+                                    <span style="color: gray;">Completed on {{task[6]}}</span><br>
                                   </div>
-
-                                  <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
-                                    <div class="panel-body">
-
-                                    {% for task in task_list_overdue %}
-                                      <div class="row">
-                                        <div class="col-md-2">
-                                        By {{task[5]}}
-                                        </div>
-                                        <div class="col-md-8">
-                                          <p>{{task[2]}}</p>
-                                          <p style="color: grey;">Overdue by {{overdue_by[loop.index0]}} days</p>
-                                        </div>
-                                        <div class="col-md-2">
-                                          <!-- Single button -->
+                                </td>
 
 
-                                              <div class="btn-group">
-                                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                  Open <span class="caret"></span>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done')}}">Done</a></li>
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending')}}">Pending</a></li>
-                                                  <li role="separator" class="divider"></li>
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete')}}">Delete</a></li>
-                                                </ul>
-                                              </div>
-
-                                        </div>
+                                  <!-- Single button -->
+                                  <td style="padding: 15px;">
+                                  <div class="col-md-2">
+                                      <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Done <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='open',
+                                          tab='#firsttab')}}">Open</a></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='pending',
+                                          tab='#firsttab')}}">Pending</a></li>
+                                          <li role="separator" class="divider"></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='delete',
+                                          tab='#firsttab')}}">Delete</a></li>
+                                        </ul>
                                       </div>
-                                    {% endfor %}
+                                  </div><!-- Single button -->
+                                  </td>
+                                <!-- </div>  -->
+                                <!-- row end-->
+                                <!-- <br> -->
+                                </tr>
+                              {% endfor %}
+                              <!-- all completed tasks assigned to you -->
 
-                                    </div>
-                                  </div>
-                                </div>
+                              </table>
 
-                                <div class="panel panel-default" style="border-width: 0;">
-                                  <div class="panel-heading" role="tab" id="headingTwo">
-                                    <h4 class="panel-title">
-                                      <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-                                        Due Today <span class="label label-warning label-as-badge" style="border-radius: 1em;">{{task_list_due_today|length}}</span></a>
-                                      </a>
-                                    </h4>
-                                  </div>
+                              </div>
+                              <!-- completed assigned to you tasks -->
 
-                                  <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
-                                    <div class="panel-body">
+                      </div><!-- tab content -->
 
-                                      {% for task in task_list_due_today %}
-                                      <div class="row">
-                                        <div class="col-md-2">
-                                        By {{task[5]}}
-                                        </div>
-                                        <div class="col-md-8">
-                                          <p>{{ task[2] }}</p>
-                                          <p style="color: grey;">Due today</p>
-                                        </div>
-                                        <div class="col-md-2">
-                                          <!-- Single button -->
-                                              <div class="btn-group">
-                                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                  Open <span class="caret"></span>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done')}}">Done</a></li>
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending')}}">Pending</a></li>
-                                                  <li role="separator" class="divider"></li>
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete')}}">Delete</a></li>
-                                                </ul>
-                                              </div>
-                                        </div>
-                                      </div>
-                                    {% endfor %}
 
-                                    </div>
-                                  </div>
-                                </div>
 
-                                <div class="panel panel-default" style="border-width: 0;">
-                                  <div class="panel-heading" role="tab" id="headingThree">
-                                    <h4 class="panel-title">
-                                      <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
-                                        Due Later <span class="label label-primary label-as-badge" style="border-radius: 1em;">
-                                        {{task_list_due_later|length}}</span></a>
-                                      </a>
-                                    </h4>
-                                  </div>
 
-                                  <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
-                                    <div class="panel-body">
-
-                                      {% for task in task_list_due_later %}
-                                      <div class="row">
-                                        <div class="col-md-2">
-                                        By {{task[5]}}
-                                        </div>
-                                        <div class="col-md-8">
-                                          <p>{{task[2]}}</p>
-                                          <p style="color: grey;">Due in {{due_in[loop.index0]}} days</p>
-                                        </div>
-                                        <div class="col-md-2">
-                                          <!-- Single button -->
-                                           <div class="btn-group">
-                                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                  Open <span class="caret"></span>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done')}}">Done</a></li>
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending')}}">Pending</a></li>
-                                                  <li role="separator" class="divider"></li>
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete')}}">Delete</a></li>
-                                                </ul>
-                                              </div>
-                                      </div>
-                                      </div>
-                                    {% endfor %}
-
-                                    </div>
-                                  </div>
-                                </div>
-                          </div><!-- panel-group-->
-                        </div>
-                    </div><!-- first tab content-->
+                      </div><!-- container fluid-->
+                </div><!-- first tab content-->
 
                     <!-- second tab content-->
-                    <div class="container-fluid tab-pane fade" id="secondtab">
+                  <div class="container-fluid tab-pane fade" id="secondtab">
 
                       {% if project_id is not none %}
                       <div class="container-fluid">
                           <!-- inline form -->
                           <form class="form-inline" action="{{ url_for('new_task', project_id = project_id) }}" method="POST" enctype="multipart/form-data">
 
-                          <h4>Add a new task</h4>
+                          <h4>Add a new task in <a href="#">{{project_name}}</a></h4>
                             <div class="form-group" >
                               <select class="selectpicker show-menu-arrow show-tick"
                                   title="Assign to" data-width="200px;" data-style="btn-default"
@@ -230,159 +303,622 @@
                       <br><br><!-- break after inline form-->
 
                       <div class="container-fluid">
-                          <div class="panel-group" id="accordion2" role="tablist" aria-multiselectable="true">
+                          <h4>Tasks assigned by you in  <a href="#">{{project_name}}</a></h4><br>
 
-                                <div class="panel panel-default" style="border-width: 0;">
-                                  <div class="panel-heading" role="tab" id="headingOne2">
-                                    <h4 class="panel-title">
-                                      <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne2" aria-expanded="true" aria-controls="collapseOne">
-                                        Overdue <span class="label label-danger label-as-badge" style="border-radius: 1em;">
-                                        {{tasks_by_you_overdue|length}}</span></a>
-                                      </a>
-                                    </h4>
+                          <div class="col-md-2">
+                            <ul class="nav nav-pills nav-stacked" id="assigned_by_you_tabs">
+                            <li role="presentation" class="active"><a href="#open_assigned_by_you" data-toggle="tab">
+                            Open
+                            <span class="badge">
+                            {{tasks_by_you_overdue|length + tasks_by_you_due_today|length + tasks_by_you_due_later|length}}
+                            </span>
+
+                            </a></li>
+
+                            <li role="presentation"><a href="#completed_assigned_by_you" data-toggle="tab">
+                            Completed
+                            <span class="badge">
+                            {{tasks_completed_assigned_by_you|length}}
+                            </span>
+                            </a></li>
+                            </ul>
+                          </div><!--col-md-2-->
+
+
+                          <!-- tab content -->
+                        <div class="tab-content">
+                            <div class="tab-pane fade active in col-md-10" id="open_assigned_by_you">
+
+
+                                <table class="table table-hover" style="table-layout: fixed;">
+                                <!-- Open Overdue assigned by you -->
+                                {% for task in tasks_by_you_overdue %}
+                                <!-- <div class="row"> -->
+                                <tr>
+
+                                <td style="word-wrap: break-word; text-overflow: ellipsis; width: 80%;
+                                    overflow: hidden;">
+                                  <div class="col-md-10">
+                                    {{task[2]}}<br>
+                                    Assigned to {{task[5]}}<br>
+
+                                    {% if project_name == 'All tasks' %}
+                                    In {{task[6]}}<br>
+                                    {% endif %}
+
+                                    <span class="label label-danger">Overdue</span>
+                                    <span style="color: gray;">Due on {{task[4]}}</span><br>
                                   </div>
-
-                                  <div id="collapseOne2" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
-                                    <div class="panel-body">
-
-                                    {% for task in tasks_by_you_overdue %}
-                                      <div class="row">
-                                        <div class="col-md-2">
-                                        To {{task[5]}}
-                                        </div>
-                                        <div class="col-md-8">
-                                          <p>{{task[2]}}</p>
-                                          <p style="color: grey;">Overdue by {{by_you_overdue[loop.index0]}} days</p>
-                                        </div>
-                                        <div class="col-md-2">
-                                          <!-- Single button -->
+                                </td>
 
 
-                                              <div class="btn-group">
-                                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                  Open <span class="caret"></span>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done')}}">Done</a></li>
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending')}}">Pending</a></li>
-                                                  <li role="separator" class="divider"></li>
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete')}}">Delete</a></li>
-                                                </ul>
-                                              </div>
-
-                                        </div>
+                                  <!-- Single button -->
+                                  <td style="padding: 15px;">
+                                  <div class="col-md-2">
+                                      <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Open <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='done',
+                                          tab='#secondtab')}}">Done</a></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='pending',
+                                          tab='#secondtab')}}">Pending</a></li>
+                                          <li role="separator" class="divider"></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='delete',
+                                          tab='#secondtab')}}">Delete</a></li>
+                                        </ul>
                                       </div>
-                                    {% endfor %}
+                                  </div><!-- Single button -->
+                                  </td>
+                                <!-- </div>  -->
+                                <!-- row end-->
+                                <!-- <br> -->
+                                </tr>
+                              {% endfor %}
+                              <!-- Open Overdue assigned by you -->
 
-                                    </div>
+                              <!-- Open due today assigned by you -->
+                                {% for task in tasks_by_you_due_today %}
+                                <!-- <div class="row"> -->
+                                <tr>
+
+                                <td style="word-wrap: break-word; text-overflow: ellipsis; width: 80%;
+                                    overflow: hidden;">
+                                  <div class="col-md-10">
+                                    {{task[2]}}<br>
+                                    Assigned to {{task[5]}}<br>
+
+                                    {% if project_name == 'All tasks' %}
+                                    In {{task[6]}}<br>
+                                    {% endif %}
+
+                                    <span class="label label-warning">Due Today</span>
+                                    <span style="color: gray;">Due on {{task[4]}}</span><br>
                                   </div>
-                                </div>
+                                </td>
 
 
-                                <div class="panel panel-default" style="border-width: 0;">
-                                  <div class="panel-heading" role="tab" id="headingTwo2">
-                                    <h4 class="panel-title">
-                                      <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo2" aria-expanded="true" aria-controls="collapseTwo2">
-                                        Due Today <span class="label label-warning label-as-badge" style="border-radius: 1em;">
-                                        {{tasks_by_you_due_today|length}}</span></a>
-                                      </a>
-                                    </h4>
-                                  </div>
-
-                                  <div id="collapseTwo2" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
-                                    <div class="panel-body">
-
-                                    {% for task in tasks_by_you_due_today %}
-                                      <div class="row">
-                                        <div class="col-md-2">
-                                        To {{task[5]}}
-                                        </div>
-                                        <div class="col-md-8">
-                                          <p>{{task[2]}}</p>
-                                          <p style="color: grey;">Due today</p>
-                                        </div>
-                                        <div class="col-md-2">
-                                          <!-- Single button -->
-
-
-                                              <div class="btn-group">
-                                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                  Open <span class="caret"></span>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done')}}">Done</a></li>
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending')}}">Pending</a></li>
-                                                  <li role="separator" class="divider"></li>
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete')}}">Delete</a></li>
-                                                </ul>
-                                              </div>
-
-                                        </div>
+                                  <!-- Single button -->
+                                  <td style="padding: 15px;">
+                                  <div class="col-md-2">
+                                      <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Open <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='done',
+                                          tab='#secondtab')}}">Done</a></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='pending',
+                                          tab='#secondtab')}}">Pending</a></li>
+                                          <li role="separator" class="divider"></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='delete',
+                                          tab='#secondtab')}}">Delete</a></li>
+                                        </ul>
                                       </div>
-                                    {% endfor %}
+                                  </div><!-- Single button -->
+                                  </td>
+                                <!-- </div>  -->
+                                <!-- row end-->
+                                <!-- <br> -->
+                                </tr>
+                              {% endfor %}
+                              <!-- Open due today assigned by you -->
 
-                                    </div>
+                              <!-- Open due later assigned by you -->
+                                {% for task in tasks_by_you_due_later %}
+                                <!-- <div class="row"> -->
+                                <tr>
+
+                                <td style="word-wrap: break-word; text-overflow: ellipsis; width: 80%;
+                                    overflow: hidden;">
+                                  <div class="col-md-10">
+                                    {{task[2]}}<br>
+                                    Assigned to {{task[5]}}<br>
+
+                                    {% if project_name == 'All tasks' %}
+                                    In {{task[6]}}<br>
+                                    {% endif %}
+
+                                    <span class="label label-success">Due Later</span>
+                                    <span style="color: gray;">Due on {{task[4]}}</span><br>
                                   </div>
-                                </div>
+                                </td>
 
 
-                                <!-- Due later assigned by you-->
-                                <div class="panel panel-default" style="border-width: 0;">
-
-                                  <div class="panel-heading" role="tab" id="headingThree2">
-                                    <h4 class="panel-title">
-                                      <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree2" aria-expanded="true" aria-controls="collapseThree2">
-                                        Due Later <span class="label label-primary label-as-badge" style="border-radius: 1em;">
-                                        {{tasks_by_you_due_later|length}}</span></a>
-                                      </a>
-                                    </h4>
-                                  </div>
-
-                                  <div id="collapseThree2" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree2">
-                                    <div class="panel-body">
-                                    {% for task in tasks_by_you_due_later %}
-                                      <div class="row">
-                                        <div class="col-md-2">
-                                        To {{task[5]}}
-                                        </div>
-                                        <div class="col-md-8">
-                                          <p>{{task[2]}}</p>
-                                          <p style="color: grey;">Due in {{by_you_due_in[loop.index0]}} days</p>
-                                        </div>
-                                        <div class="col-md-2">
-                                          <!-- Single button -->
-
-
-                                              <div class="btn-group">
-                                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                  Open <span class="caret"></span>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done')}}">Done</a></li>
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending')}}">Pending</a></li>
-                                                  <li role="separator" class="divider"></li>
-                                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete')}}">Delete</a></li>
-                                                </ul>
-                                              </div>
-                                        </div>
+                                  <!-- Single button -->
+                                  <td style="padding: 15px;">
+                                  <div class="col-md-2">
+                                      <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Open <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='done',
+                                          tab='#secondtab')}}">Done</a></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='pending',
+                                          tab='#secondtab')}}">Pending</a></li>
+                                          <li role="separator" class="divider"></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='delete',
+                                          tab='#secondtab')}}">Delete</a></li>
+                                        </ul>
                                       </div>
-                                    {% endfor %}
-                                    </div>
+                                  </div><!-- Single button -->
+                                  </td>
+                                <!-- </div>  -->
+                                <!-- row end-->
+                                <!-- <br> -->
+                                </tr>
+                              {% endfor %}
+                              <!-- Open due later assigned by you -->
+
+                              </table>
+
+                            </div>
+
+
+                            <div class="tab-pane fade col-md-10" id="completed_assigned_by_you">
+
+                              <!-- tasks completed assigned by you -->
+                              <table class="table table-hover" style="table-layout: fixed;">
+                                {% for task in tasks_completed_assigned_by_you %}
+                                <!-- <div class="row"> -->
+                                <tr>
+
+                                <td style="word-wrap: break-word; text-overflow: ellipsis; width: 80%;
+                                    overflow: hidden;">
+                                  <div class="col-md-10">
+                                    {{task[2]}}<br>
+                                    Completed by {{task[5]}}<br>
+
+                                    {% if project_name == 'All tasks' %}
+                                    In {{task[7]}}<br>
+                                    {% endif %}
+
+                                    <span style="color: gray;"> On {{task[6]}}</span><br>
                                   </div>
-                                </div>
-                          </div><!-- panel group-->
+                                </td>
+
+
+                                  <!-- Single button -->
+                                  <td style="padding: 15px;">
+                                  <div class="col-md-2">
+                                      <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Done <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='open',
+                                          tab='#secondtab')}}">Open</a></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='pending',
+                                          tab='#secondtab')}}">Pending</a></li>
+                                          <li role="separator" class="divider"></li>
+                                          <li><a href="{{url_for('update_task', task_id=task[0], status='delete',
+                                          tab='#secondtab')}}">Delete</a></li>
+                                        </ul>
+                                      </div>
+                                  </div><!-- Single button -->
+                                  </td>
+                                <!-- </div>  -->
+                                <!-- row end-->
+                                <!-- <br> -->
+                                </tr>
+                              {% endfor %}
+                              <!-- tasks completed assigned by you -->
+                              </table>
+                            </div>
+
+
+                        </div>
+                        <!-- tab content -->
+
                       </div><!-- container fluid-->
-                    </div><!-- second tab content-->
+
+                  </div><!-- second tab content-->
+
+
+                    <!-- fourth tab content-->
+
+                <!-- fourth tab content -->
+                <div class="container-fluid tab-pane fade active in" id="fourthtab">
+
+                  {% if project_name == 'All tasks' %}
+                  <div class="container-fluid col-md-12">
+
+                  <h3>Summary of all your projects</h3><br>
+
+                    <div class="col-md-2">
+
+                      <span class="label label-danger">Overdue</span><br>
+                      <span class="label label-warning">Due Today</span><br>
+                      <span class="label label-success">Due Later</span><br>
+                      <span class="label label-primary">Completed</span>
+
+                    </div>
+
+                  <div class="col-md-9">
+                    {% for project in open_tasks_list %}
+                    <div class="row">
+                      <div class="col-md-4">
+
+                        <h4><a href="{{url_for('project_tasks', project_id=project['project_id'])}}">
+                          {{project['project_name']}}
+                        </a></h4>
+                      </div>
+
+                      <div class="col-md-8">
+                        {% if project['all_tasks'] != 0 %}
+                        <!-- progress bar -->
+                        <div class="progress">
+
+                         <div class="progress-bar progress-bar-default"
+                          style="width: {{ 100*(project['all_done_tasks'] / project['all_tasks'] ) }}%">
+                            {{project['all_done_tasks']}}
+                          </div>
+
+                          <div class="progress-bar progress-bar-danger"
+                          style="width: {{ 100*(project['open_overdue_tasks'] / project['all_tasks']) }}%">
+                            {{project['open_overdue_tasks']}}
+                          </div>
+
+                          <div class="progress-bar progress-bar-warning"
+                          style="width: {{ 100*(project['open_duetoday_tasks'] / project['all_tasks']) }}%">
+                          {{project['open_duetoday_tasks']}}
+                          </div>
+
+                          <div class="progress-bar progress-bar-success"
+                          style="width: {{ 100*(project['open_duelater_tasks'] / project['all_tasks']) }}%">
+                            {{project['open_duelater_tasks']}}
+                          </div>
+                        </div>
+                        <!-- progress bar -->
+                        {% else %}
+                        <p class="text-muted">No tasks assigned in this project</p>
+                        {% endif %}
+                      </div>
+                    </div> <!-- row -->
+                    {% endfor %}
+                  </div> <!-- col-md-9 -->
+
+                  </div>
+
+                  {% else %}
+
+                    <div class="container-fluid">
+                      <h4>All tasks</h4><br>
+
+                      <div class="col-md-2">
+                      <ul class="nav nav-pills nav-stacked" id="summarytabs">
+                        <li role="presentation" class="active"><a href="#open" data-toggle="tab">
+                        Open
+                        <span class="badge">
+                        {{open_overdue_tasks|length + open_duetoday_tasks|length + open_duelater_tasks|length}}
+                        </span>
+
+                        </a></li>
+
+                        <li role="presentation"><a href="#completed" data-toggle="tab">
+                        Completed
+                        <span class="badge">
+                        {{all_done_tasks|length}}
+                        </span>
+                        </a></li>
+                      </ul>
+                      </div><!--col-md-2-->
+
+
+
+                      <div class="tab-content">
+
+                              <!-- completed tasks -->
+                              <div class="container-fluid tab-pane fade col-md-10" id="completed">
+                              <!-- <div class="container-fluid"> -->
+                                <table class="table table-hover" style="table-layout: fixed;">
+
+                                {% for task in all_done_tasks %}
+                                <!-- <div class="row"> -->
+                                  <tr>
+
+                                    <td style="word-wrap: break-word; text-overflow: ellipsis; width: 80%;
+                                    overflow: hidden;">
+                                      <!-- <div class="col-md-10"> -->
+                                        <!-- <p> -->
+                                        {{task[5]}}
+                                        <br>
+                                        {{task[1]}} assigned to {{task[2]}}
+                                        <!-- <small><span style="color: gray;">  {{task[3]}}</span></small><br> -->
+                                        <br>
+                                        <span style="color: gray;">
+                                        Completed on {{task[7]}}
+                                        </span><br>
+                                        <!-- </p> -->
+                                      <!-- </div> -->
+                                    </td>
+
+                                    <!-- Single button -->
+                                    <td style="word-wrap: break-word;">
+                                    <!-- <div class="col-md-2"> -->
+                                        <div class="btn-group">
+                                          <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            {{task[6]}} <span class="caret"></span>
+                                          </button>
+                                          <ul class="dropdown-menu">
+                                            <li><a href="{{url_for('update_task', task_id=task[0], status='open',
+                                            tab='#fourthtab')}}">Open</a></li>
+                                            <li><a href="{{url_for('update_task', task_id=task[0], status='pending',
+                                            tab='#fourthtab')}}">Pending</a></li>
+                                            <li role="separator" class="divider"></li>
+                                            <li><a href="{{url_for('update_task', task_id=task[0], status='delete',
+                                            tab='#fourthtab')}}">Delete</a></li>
+                                          </ul>
+                                        </div>
+                                    <!-- </div> -->
+                                    <!-- Single button -->
+                                    </td>
+                                  <!-- </div>  -->
+                                  <!-- row end-->
+                                  <!-- <br> -->
+                                  </tr>
+                              {% endfor %}
+
+                                </table>
+                              <!-- </div> -->
+                              <!-- completed tasks -->
+                              </div>
+
+
+
+                      <div class="tab-pane fade active in col-md-10" id="open">
+
+                      <table class="table table-hover" style="table-layout: fixed;">
+                      <!-- Overdue open tasks -->
+                      {% for task in open_overdue_tasks %}
+                        <!-- <div class="row"> -->
+                        <tr>
+
+
+                        <td style="word-wrap: break-word; text-overflow: ellipsis; width: 80%;
+                                    overflow: hidden;">
+                          <div class="col-md-10">
+                          {{task[5]}}<br>
+                          {{task[1]}} assigned to {{task[2]}}<br>
+
+                            <!-- <span style="color: gray;">{{task[1]}} assigned to {{task[2]}}</span> -->
+
+                            <!-- <small><span style="color: gray;">  {{task[3]}}</span></small><br> -->
+                            <!-- <span style="display: inline-block; width: 24px"></span> -->
+
+                            <!-- <span style="display: inline-block; width: 24px"></span> -->
+                            <span class="label label-danger">Overdue</span>
+                            <span style="color: gray;">Due on {{task[4]}}</span><br>
+
+                          </div>
+                        </td>
+
+
+                          <!-- Single button -->
+                          <td style="padding: 15px;">
+                          <div class="col-md-2">
+                              <div class="btn-group">
+                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                  {{task[6]}} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done',
+                                  tab='#fourthtab')}}">Done</a></li>
+                                  {% if task[6] != 'pending' %}
+                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending',
+                                  tab='#fourthtab')}}">Pending</a></li>
+                                  {% endif %}
+                                  <li role="separator" class="divider"></li>
+                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete',
+                                  tab='#fourthtab')}}">Delete</a></li>
+                                </ul>
+                              </div>
+                          </div><!-- Single button -->
+                          </td>
+                        <!-- </div>  -->
+                        <!-- row end-->
+                        <!-- <br> -->
+                        </tr>
+                      {% endfor %}
+
+                      <!-- Due today open tasks -->
+                      {% for task in open_duetoday_tasks %}
+                        <!-- <div class="row"> -->
+                        <tr>
+
+                        <td style="word-wrap: break-word; text-overflow: ellipsis; width: 80%;
+                                    overflow: hidden;">
+                          <div class="col-md-10">
+                            {{task[5]}}<br>
+                            {{task[1]}} assigned to {{task[2]}}
+                            <small><span style="color: gray;">  {{task[3]}}</span></small><br>
+                            <!-- <span style="display: inline-block; width: 24px"></span> -->
+
+                            <!-- <span style="display: inline-block; width: 24px"></span> -->
+                            <span class="label label-warning">Due today</span>
+                            <span style="color: gray;">Due on {{task[4]}}</span><br>
+                            <span class="glyphicon"
+                            style="content:'\25cf'; font-size: 3em; color: red;">
+                            </span>
+                          </div>
+                        </td>
+
+                          <!-- Single button -->
+                          <td style="padding: 15px;">
+                          <div class="col-md-2">
+                              <div class="btn-group">
+                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                  {{task[6]}} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done',
+                                  tab='#fourthtab')}}">Done</a></li>
+                                  {% if task[6] != 'pending' %}
+                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending',
+                                  tab='#fourthtab')}}">Pending</a></li>
+                                  {% endif %}
+                                  <li role="separator" class="divider"></li>
+                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete',
+                                  tab='#fourthtab')}}">Delete</a></li>
+                                </ul>
+                              </div>
+                          </div><!-- Single button -->
+                          </td>
+
+                        <!-- </div>  -->
+                        <!-- row end-->
+                        <!-- <br> -->
+                        </tr>
+                      {% endfor %}
+
+                      <!-- Due later open tasks -->
+                      {% for task in open_duelater_tasks %}
+                        <!-- <div class="row"> -->
+                        <tr>
+
+                        <td style="word-wrap: break-word; text-overflow: ellipsis; width: 80%;
+                                    overflow: hidden;">
+                          <div class="col-md-10">
+                            {{task[5]}}<br>
+                            {{task[1]}} assigned to {{task[2]}}
+                            <small><span style="color: gray;">  {{task[3]}}</span></small><br>
+                            <!-- <span style="display: inline-block; width: 24px"></span> -->
+
+                            <!-- <span style="display: inline-block; width: 24px"></span> -->
+                            <span class="label label-success">Due Later</span>
+                            <span style="color: gray;">Due on {{task[4]}}</span><br>
+                            <span class="glyphicon"
+                            style="content:'\25cf'; font-size: 3em; color: red;">
+                            </span>
+                          </div>
+                        </td>
+
+                          <!-- Single button -->
+                          <td style="padding: 15px;">
+                          <div class="col-md-2">
+                              <div class="btn-group">
+                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                  {{task[6]}} <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                  <li><a href="{{url_for('update_task', task_id=task[0], status='done',
+                                  tab='#fourthtab')}}">Done</a></li>
+                                  {% if task[6] != 'pending' %}
+                                  <li><a href="{{url_for('update_task', task_id=task[0], status='pending',
+                                  tab='#fourthtab')}}">Pending</a></li>
+                                  {% endif %}
+                                  <li role="separator" class="divider"></li>
+                                  <li><a href="{{url_for('update_task', task_id=task[0], status='delete',
+                                  tab='#fourthtab')}}">Delete</a></li>
+                                </ul>
+                              </div>
+                          </div><!-- Single button -->
+                          </td>
+
+                        <!-- </div>  -->
+                        <!-- row end-->
+                        <!-- <br> -->
+                        </tr>
+                      {% endfor %}
+
+                      </table>
+                      </div><!-- col-md-10-->
+
+
+
+
+                      </div> <!-- tab content-->
+
+
+
+                    </div><!-- second container fluid (main content)-->
+                  {% endif %}
+                </div> <!-- fourth tab-->
+
 
                     <!-- third tab content-->
-                    <div class=" container-fluid tab-pane fade" id="thirdtab">
-                          <h3>This page is under construction, please check again later. </h3> <br><br>
 
-                          <img src="https://media.giphy.com/media/tAeB6dptxnoli/giphy.gif" alt="HTML5 Icon"
-                          style="width:500px;height:420px;">
-                    </div><!-- third tab content-->
+                  <div class="container-fluid tab-pane fade" id="thirdtab">
+                      <div class="container-fluid">
 
-                </div><!-- myTabContent-->
+                      <!-- timeline -->
+                        {% for timepoint in timeline %}
+                        <div class="row">
+                          <div class="col-md-6">
+                            {% if timepoint[7] == 'open' %}
+
+                            <span style="display: inline-block; width: 24px"></span>
+                            <span style="color: gray;">{{timepoint[6]}}</span><br>
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                            <span style="display: inline-block; width: 5px"></span>
+                            {{timepoint[1]}} assigned to {{timepoint[2]}}<br>
+                            <span style="display: inline-block; width: 24px"></span>
+                            {{timepoint[5]}}
+
+                            {% elif timepoint[7] == 'done' %}
+
+                            <span style="display: inline-block; width: 24px"></span>
+                            <span style="color: gray;">{{timepoint[6]}}</span><br>
+                            <span class="glyphicon glyphicon-ok" aria-hidden="true" style="color: green;"></span>
+                            <span style="display: inline-block; width: 5px"></span>
+                            {{timepoint[1]}} completed task<br>
+                            <span style="display: inline-block; width: 24px"></span>
+                            {{timepoint[5]}}
+
+                            {% elif timepoint[7] == 'pending' %}
+
+                            <span style="display: inline-block; width: 24px"></span>
+                            <span style="color: gray;">{{timepoint[6]}}</span><br>
+                            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true" style="color: orange;"></span>
+                            <span style="display: inline-block; width: 5px"></span>
+                            {{timepoint[1]}} marked the task as pending<br>
+                            <span style="display: inline-block; width: 24px"></span>
+                            {{timepoint[5]}}
+
+                            {% elif timepoint[7] == 'delete' %}
+
+                            <span style="display: inline-block; width: 24px"></span>
+                            <span style="color: gray;">{{timepoint[6]}}</span><br>
+                            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                            <span style="display: inline-block; width: 5px"></span>
+                            {{timepoint[1]}} deleted the task <br>
+                            <span style="display: inline-block; width: 24px"></span>
+                            {{timepoint[5]}}
+
+                            {% endif %}
+                          </div>
+                        </div>
+                        <br>
+                        {% endfor %}
+                        <!-- timeline ends -->
+
+                      </div>
+                  </div><!-- third tab content-->
+
+
+ </div><!-- myTabContent-->
 
 
                         <script type="text/javascript">
@@ -390,6 +926,7 @@
                             $('#accordion .panel-collapse').collapse('toggle');
                             });
                         </script>
+
 {% endblock %}
 
 

@@ -86,7 +86,7 @@ def login():
                 if sha256_crypt.verify(request.form['password'], data):
                     session['logged_in'] = True
                     session['username'] = data_row[2]
-                    flash('You are now logged in as ' + str(session['username']))
+                    # flash('You are now logged in as ' + str(session['username']))
                     return redirect(url_for('all_project_tasks'))
                 else:
                     flash('Invalid password, try again.')
@@ -147,6 +147,12 @@ def username_to_userid(username):
     conn.close()
     return user_id
 
+def userid_to_username(user_id):
+    c, conn = connection()
+    user_data = c.execute("select username from users where user_id = (%s)", (user_id, ))
+    username = c.fetchone()
+    conn.close()
+    return username
 
 @app.route('/new_project/', methods = ['GET', 'POST'])
 def new_project():
@@ -169,7 +175,8 @@ def new_project():
                     values (%s, %s);''', (user_id, lastid))
                 conn.commit()
 
-            return redirect(url_for('dashboard', username=session['username']))
+            # return redirect(url_for('dashboard', username=session['username']))
+            return redirect(url_for('all_project_tasks'))
         return render_template("new_project.html", all_users_list=get_all_users())
 
     except Exception as e:
@@ -226,7 +233,8 @@ def new_task(project_id):
             conn.commit()
 
 
-            return redirect(url_for('project_tasks', project_id = project_id))
+            # return redirect(url_for('project_tasks', project_id = project_id))
+            return redirect(redirect_url() + '#secondtab')
 
         except Exception as e:
             flash(str(e))
@@ -283,7 +291,40 @@ def get_assigned_to_tasks(user_id, project_id):
         task_list_due_later = c.fetchall()
         conn.commit()
 
-        return [task_list_due_today, task_list_overdue, task_list_due_later]
+        # your completed tasks
+        c, conn = connection()
+        c.execute(''' select t.task_id, assigned_by, description, date(assigned_at), date(due_at), username,
+            date(timepoint)
+            from tasks t, task_status ta, users u where u.user_id = assigned_by and
+            t.task_id = ta.task_id and assigned_to = (%s)
+            and ta.status='done' and project_id = (%s)
+            order by date(due_at) asc;''',
+            (user_id, project_id))
+        tasks_completed_by_you = c.fetchall()
+        conn.commit()
+
+        task_list_overdue = [ [ x[0], userid_to_username(x[1])[0], x[2],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5] ] for x in task_list_overdue]
+
+        task_list_due_today = [ [ x[0], userid_to_username(x[1])[0], x[2],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5] ] for x in task_list_due_today]
+
+        task_list_due_later = [ [ x[0], userid_to_username(x[1])[0], x[2],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5] ] for x in task_list_due_later]
+
+        tasks_completed_by_you = [ [ x[0], userid_to_username(x[1])[0], x[2],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5],
+        datetime.datetime.strptime(str(x[6]), '%Y-%m-%d').strftime('%B %d')] for x in tasks_completed_by_you]
+
+        return [task_list_due_today, task_list_overdue, task_list_due_later, tasks_completed_by_you]
 
     except Exception as e:
         return(str(e))
@@ -323,11 +364,176 @@ def get_assigned_by_tasks(user_id, project_id):
         tasks_by_you_due_later = c.fetchall()
         conn.commit()
 
+        # all_completed_tasks assigned by you
+        c.execute(''' select t.task_id, assigned_to, description, date(assigned_at), date(due_at), username,
+            date(ta.timepoint)
+            from tasks t, task_status ta, users u where u.user_id = assigned_to and
+            t.task_id = ta.task_id and assigned_by = (%s) and assigned_to != (%s)
+            and status='done' and project_id = (%s)
+            order by date(due_at) asc;''',
+            (user_id, user_id, project_id))
+        tasks_completed_assigned_by_you = c.fetchall()
+        conn.commit()
 
-        return [tasks_by_you_due_today, tasks_by_you_overdue, tasks_by_you_due_later]
+
+        tasks_by_you_due_today = [ [ x[0], userid_to_username(x[1])[0], x[2],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5] ] for x in tasks_by_you_due_today]
+
+        tasks_by_you_overdue = [ [ x[0], userid_to_username(x[1])[0], x[2],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5] ] for x in tasks_by_you_overdue]
+
+
+        tasks_by_you_due_later = [ [ x[0], userid_to_username(x[1])[0], x[2],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5] ] for x in tasks_by_you_due_later]
+
+        tasks_completed_assigned_by_you = [ [ x[0], userid_to_username(x[1])[0], x[2],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5], datetime.datetime.strptime(str(x[6]), '%Y-%m-%d').strftime('%B %d')] for x in tasks_completed_assigned_by_you]
+
+
+
+
+
+
+        return [tasks_by_you_due_today, tasks_by_you_overdue, tasks_by_you_due_later, tasks_completed_assigned_by_you]
 
     except Exception as e:
         return(str(e))
+    finally:
+        conn.close()
+
+
+def project_summary(project_id):
+    try:
+        # 1. Currently open tasks
+        # Get all delayed/overdue tasks
+        c, conn = connection()
+        c.execute(''' select t.task_id, assigned_by, assigned_to, date(assigned_at), date(due_at),
+            description, ts.status
+            from tasks t, task_status ta, task_status ts
+            where t.task_id = ta.task_id and t.task_id = ts.task_id and (ts.status = 'open' or ts.status = 'pending')
+            and project_id = (%s) and date(due_at) < curdate() order by date(due_at) asc;;''',
+            (project_id))
+        open_overdue_tasks = c.fetchall()
+        conn.commit()
+
+        open_overdue_tasks = [ [ x[0], userid_to_username(x[1])[0], userid_to_username(x[2])[0],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5][0].upper() + x[5][1:],
+        x[6] ] for x in open_overdue_tasks]
+
+        # Get all due today tasks
+        c, conn = connection()
+        c.execute(''' select t.task_id, assigned_by, assigned_to, date(assigned_at), date(due_at),
+            description, ts.status
+            from tasks t, task_status ta, task_status ts
+            where t.task_id = ta.task_id and t.task_id = ts.task_id and
+            (ts.status = 'open' or ts.status = 'pending') and
+            project_id = (%s) and date(due_at) = curdate() order by date(due_at) asc;;''',
+            (project_id))
+        open_duetoday_tasks = c.fetchall()
+        conn.commit()
+
+        open_duetoday_tasks = [ [ x[0], userid_to_username(x[1])[0], userid_to_username(x[2])[0],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5][0].upper() + x[5][1:],
+        x[6] ] for x in open_duetoday_tasks]
+
+        # Get all due later tasks
+        c, conn = connection()
+        c.execute(''' select t.task_id, assigned_by, assigned_to, date(assigned_at), date(due_at),
+            description, ts.status
+            from tasks t, task_status ta, task_status ts
+            where t.task_id = ta.task_id and t.task_id = ts.task_id and
+            (ts.status = 'open' or ts.status = 'pending') and
+            project_id = (%s) and date(due_at) > curdate() order by date(due_at) asc;;''',
+            (project_id))
+        open_duelater_tasks = c.fetchall()
+        conn.commit()
+
+        open_duelater_tasks = [ [ x[0], userid_to_username(x[1])[0], userid_to_username(x[2])[0],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5][0].upper() + x[5][1:],
+        x[6] ] for x in open_duelater_tasks]
+
+        all_open_tasks = open_overdue_tasks + open_duetoday_tasks + open_duelater_tasks
+
+
+        # 2. Done tasks
+        # Get all tasks completed (irrespective of whether done in time or delayed)
+        c, conn = connection()
+        c.execute(''' select t.task_id, assigned_by, assigned_to, date(assigned_at), date(due_at),
+            description, ts.status, date(ts.timepoint)
+            from tasks t, task_status ta, task_status ts
+            where t.task_id = ta.task_id and t.task_id = ts.task_id and ts.status = 'done'
+            and project_id = (%s) order by date(due_at) asc;''',
+            (project_id))
+        all_done_tasks = c.fetchall()
+        conn.commit()
+
+        all_done_tasks = [ [ x[0], userid_to_username(x[1])[0], userid_to_username(x[2])[0],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5][0].upper() + x[5][1:],
+        x[6][0].upper() + x[6][1:],
+        datetime.datetime.strptime(str(x[7]), '%Y-%m-%d').strftime('%B %d')] for x in all_done_tasks]
+
+
+        # get all done later than due
+        # get all done in time
+
+        return [open_overdue_tasks, open_duetoday_tasks,
+        open_duelater_tasks, all_open_tasks, all_done_tasks]
+
+
+
+
+
+
+
+
+
+
+    except Exception as e:
+        return(e)
+
+    finally:
+        conn.close()
+
+
+
+def project_timeline(project_id):
+    try:
+        c, conn = connection()
+        # query list of all task actions in project_id
+        c.execute('''select project_id, assigned_by, assigned_to, date(assigned_at),
+            date(due_at), description, date(timepoint), status
+            from tasks, task_actions where tasks.task_id = task_actions.task_id and project_id = (%s)
+            order by date(timepoint) asc;''',
+            (project_id, ))
+        task_list = c.fetchall()
+        conn.commit()
+        task_list = [ [ x[0], userid_to_username(x[1])[0], userid_to_username(x[2])[0],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5][0].upper() + x[5][1:],
+        datetime.datetime.strptime(str(x[6]), '%Y-%m-%d').strftime('%B %d'),
+        x[7] ] for x in task_list]
+        return(task_list)
+
+
+    except Exception as e:
+        flash(e)
     finally:
         conn.close()
 
@@ -345,69 +551,125 @@ def project_tasks(project_id):
     task_list_due_today = get_assigned_to_tasks(user_id=user_id, project_id = project_id)[0]
     task_list_overdue = get_assigned_to_tasks(user_id=user_id, project_id = project_id)[1]
     task_list_due_later= get_assigned_to_tasks(user_id=user_id, project_id = project_id)[2]
+    tasks_completed_by_you = get_assigned_to_tasks(user_id=user_id, project_id = project_id)[3]
+    # all_assigned_to_you = task_list_overdue + task_list_due_today + task_list_due_later
 
 
     #assigned by you tasks
     tasks_by_you_due_today = get_assigned_by_tasks(user_id=user_id, project_id=project_id)[0]
     tasks_by_you_overdue = get_assigned_by_tasks(user_id=user_id, project_id=project_id)[1]
     tasks_by_you_due_later = get_assigned_by_tasks(user_id=user_id, project_id=project_id)[2]
+    tasks_completed_assigned_by_you = get_assigned_by_tasks(user_id=user_id, project_id=project_id)[3]
 
-    due_in = [(x[4]-datetime.date.today()).days for x in task_list_due_later]
-    overdue_by = [(datetime.date.today() - x[4]).days for x in task_list_overdue]
+    # due_in = [(x[4]-datetime.date.today()).days for x in task_list_due_later]
+    # overdue_by = [(datetime.date.today() - x[4]).days for x in task_list_overdue]
 
-    by_you_due_in = [(x[4]-datetime.date.today()).days for x in tasks_by_you_due_later]
-    by_you_overdue = [(datetime.date.today() - x[4]).days for x in tasks_by_you_overdue]
+    # by_you_due_in = [(x[4]-datetime.date.today()).days for x in tasks_by_you_due_later]
+    # by_you_overdue = [(datetime.date.today() - x[4]).days for x in tasks_by_you_overdue]
+
+    timeline = project_timeline(project_id)
 
     session['back'] = request.base_url
+
 
 
     return render_template("project_tasks.html", users_in_project = users_in_project,
         project_id = project_id, all_users_list = all_users_list,
         user_projects = user_projects, project_name = project_name,
         task_list_due_today = task_list_due_today, task_list_overdue=task_list_overdue,
-        task_list_due_later=task_list_due_later,
+        task_list_due_later=task_list_due_later, all_assigned_to_you = all_assigned_to_you,
         tasks_by_you_due_today=tasks_by_you_due_today, tasks_by_you_overdue=tasks_by_you_overdue,
         tasks_by_you_due_later=tasks_by_you_due_later,
-        due_in=due_in, overdue_by=overdue_by,
-        by_you_due_in = by_you_due_in, by_you_overdue = by_you_overdue)
+        tasks_completed_by_you = tasks_completed_by_you,
+        tasks_completed_assigned_by_you = tasks_completed_assigned_by_you,
+        # due_in=due_in, overdue_by=overdue_by,
+        # by_you_due_in = by_you_due_in, by_you_overdue = by_you_overdue,
+        timeline = timeline, open_overdue_tasks = project_summary(project_id)[0],
+        open_duetoday_tasks = project_summary(project_id)[1],
+        open_duelater_tasks = project_summary(project_id)[2],
+        all_open_tasks = project_summary(project_id)[3],
+        all_done_tasks = project_summary(project_id)[4])
 
 
 def all_assigned_to_you(user_id):
     try:
         c, conn = connection()
 
-        # due today
-        c.execute(''' select t.task_id, assigned_by, description, date(assigned_at), date(due_at), username
-            from tasks t, task_status ta, users u where u.user_id = assigned_by and
-            t.task_id = ta.task_id and assigned_to = (%s)
+        # due today open
+        c.execute(''' select t.task_id, assigned_by, description, date(assigned_at), date(due_at),
+            username, project_name
+            from tasks t, task_status ta, users u, projects p where u.user_id = assigned_by and
+            t.task_id = ta.task_id and t.project_id = p.project_id and assigned_to = (%s)
             and status='open' and date(t.due_at) = curdate();''',
             (user_id, ))
         task_list_due_today = c.fetchall()
         conn.commit()
 
-        # overdue
+        task_list_due_today = [ [ x[0], userid_to_username(x[1])[0],
+        x[2][0].upper() + x[2][1:],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5], x[6]] for x in task_list_due_today]
+
+
+        # overdue open
         c, conn = connection()
-        c.execute(''' select t.task_id, assigned_by, description, date(assigned_at), date(due_at), username
-            from tasks t, task_status ta, users u where u.user_id = assigned_by and
-            t.task_id = ta.task_id and assigned_to = (%s)
+        c.execute(''' select t.task_id, assigned_by, description, date(assigned_at), date(due_at),
+            username, project_name
+            from tasks t, task_status ta, users u, projects p where u.user_id = assigned_by and
+            t.task_id = ta.task_id and assigned_to = (%s) and t.project_id = p.project_id
             and status='open' and date(t.due_at) < curdate()
             order by date(due_at) asc;''',
             (user_id, ))
         task_list_overdue = c.fetchall()
         conn.commit()
 
-        # due later
+        task_list_overdue = [ [ x[0], userid_to_username(x[1])[0],
+        x[2][0].upper() + x[2][1:],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5], x[6] ] for x in task_list_overdue]
+
+        # due later open
         c, conn = connection()
-        c.execute(''' select t.task_id, assigned_by, description, date(assigned_at), date(due_at), username
-            from tasks t, task_status ta, users u where u.user_id = assigned_by and
-            t.task_id = ta.task_id and assigned_to = (%s)
+        c.execute(''' select t.task_id, assigned_by, description, date(assigned_at), date(due_at),
+            username, project_name
+            from tasks t, task_status ta, users u, projects p where u.user_id = assigned_by and
+            t.task_id = ta.task_id and assigned_to = (%s) and t.project_id = p.project_id
             and status='open' and date(t.due_at) > curdate()
             order by date(due_at) asc;''',
             (user_id, ))
         task_list_due_later = c.fetchall()
         conn.commit()
 
-        return [task_list_due_today, task_list_overdue, task_list_due_later]
+
+        task_list_due_later = [ [ x[0], userid_to_username(x[1])[0],
+        x[2][0].upper() + x[2][1:],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5], x[6]] for x in task_list_due_later]
+
+        # all assigned to you completed
+        c, conn = connection()
+        c.execute(''' select t.task_id, assigned_by, description, date(assigned_at),
+            date(due_at), username, date(ta.timepoint), project_name
+            from tasks t, task_status ta, users u, projects p where u.user_id = assigned_by and
+            t.task_id = ta.task_id and assigned_to = (%s) and t.project_id = p.project_id
+            and status='done'
+            order by date(due_at) asc;''',
+            (user_id, ))
+        all_completed_tasks = c.fetchall()
+        conn.commit()
+
+        all_completed_tasks = [ [ x[0], userid_to_username(x[1])[0],
+        x[2][0].upper() + x[2][1:],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5],
+        datetime.datetime.strptime(str(x[6]), '%Y-%m-%d').strftime('%B %d'),
+        x[7] ] for x in all_completed_tasks]
+
+        return [task_list_due_today, task_list_overdue, task_list_due_later, all_completed_tasks]
     except Exception as e:
         flash(str(e))
     finally:
@@ -418,37 +680,80 @@ def all_assigned_by_you(user_id):
         c, conn = connection()
 
         # due today
-        c.execute(''' select t.task_id, assigned_to, description, date(assigned_at), date(due_at), username
-            from tasks t, task_status ta, users u where u.user_id = assigned_to and
-            t.task_id = ta.task_id and assigned_by = (%s) and assigned_to != (%s)
-            and status='open' and date(t.due_at) = curdate();''',
+        c.execute(''' select t.task_id, assigned_to, description, date(assigned_at), date(due_at),
+            username, project_name
+            from tasks t, task_status ta, users u, projects p where u.user_id = assigned_to and
+            t.task_id = ta.task_id and assigned_by = (%s) and assigned_to != (%s) and
+            t.project_id = p.project_id and status='open' and date(t.due_at) = curdate();''',
             (user_id, user_id))
         task_list_due_today = c.fetchall()
         conn.commit()
 
+        task_list_due_today = [ [ x[0], userid_to_username(x[1])[0],
+        x[2][0].upper() + x[2][1:],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5], x[6] ] for x in task_list_due_today]
+
         # overdue
         c, conn = connection()
-        c.execute(''' select t.task_id, assigned_to, description, date(assigned_at), date(due_at), username
-            from tasks t, task_status ta, users u where u.user_id = assigned_to and
-            t.task_id = ta.task_id and assigned_by = (%s) and assigned_to != (%s)
+        c.execute(''' select t.task_id, assigned_to, description, date(assigned_at), date(due_at),
+            username, project_name
+            from tasks t, task_status ta, users u, projects p where u.user_id = assigned_to and
+            t.task_id = ta.task_id and assigned_by = (%s) and assigned_to != (%s) and t.project_id = p.project_id
             and status='open' and date(t.due_at) < curdate()
             order by date(due_at) asc;''',
             (user_id, user_id))
         task_list_overdue = c.fetchall()
         conn.commit()
 
+        task_list_overdue = [ [ x[0], userid_to_username(x[1])[0],
+        x[2][0].upper() + x[2][1:],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5], x[6] ] for x in task_list_overdue]
+
+
         # due later
         c, conn = connection()
-        c.execute(''' select t.task_id, assigned_to, description, date(assigned_at), date(due_at), username
-            from tasks t, task_status ta, users u where u.user_id = assigned_to and
+        c.execute(''' select t.task_id, assigned_to, description, date(assigned_at), date(due_at),
+            username, project_name
+            from tasks t, task_status ta, users u, projects p  where u.user_id = assigned_to and
             t.task_id = ta.task_id and assigned_by = (%s) and assigned_to != (%s)
-            and status='open' and date(t.due_at) > curdate()
+            and t.project_id = p.project_id and status='open' and date(t.due_at) > curdate()
             order by date(due_at) asc;''',
             (user_id, user_id))
         task_list_due_later = c.fetchall()
         conn.commit()
 
-        return [task_list_due_today, task_list_overdue, task_list_due_later]
+        task_list_due_later = [ [ x[0], userid_to_username(x[1])[0],
+        x[2][0].upper() + x[2][1:],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5], x[6]] for x in task_list_due_later]
+
+
+        # all assigned by you completed
+        c, conn = connection()
+        c.execute(''' select t.task_id, assigned_to, description, date(assigned_at),
+            date(due_at), username, date(ta.timepoint), project_name
+            from tasks t, task_status ta, users u, projects p where u.user_id = assigned_to and
+            t.task_id = ta.task_id and assigned_by = (%s) and t.project_id = p.project_id
+            and status='done'
+            order by date(due_at) asc;''',
+            (user_id, ))
+        all_tasks_by_you_completed = c.fetchall()
+        conn.commit()
+
+        all_tasks_by_you_completed = [ [ x[0], userid_to_username(x[1])[0],
+        x[2][0].upper() + x[2][1:],
+        datetime.datetime.strptime(str(x[3]), '%Y-%m-%d').strftime('%B %d'),
+        datetime.datetime.strptime(str(x[4]), '%Y-%m-%d').strftime('%B %d'),
+        x[5],
+        datetime.datetime.strptime(str(x[6]), '%Y-%m-%d').strftime('%B %d'),
+        x[7]] for x in all_tasks_by_you_completed]
+
+        return [task_list_due_today, task_list_overdue, task_list_due_later, all_tasks_by_you_completed]
     except Exception as e:
         flash(str(e))
     finally:
@@ -461,47 +766,83 @@ def all_project_tasks():
     # get all users
     all_users_list = get_all_users()
     user_projects = get_user_projects(username_to_userid(session.get('username')))
-    project_name = 'All open tasks'
+    project_name = 'All tasks'
 
     # tasks assigned by the user
     task_list_due_today = all_assigned_to_you(user_id=user_id)[0]
     task_list_overdue = all_assigned_to_you(user_id=user_id)[1]
     task_list_due_later = all_assigned_to_you(user_id=user_id)[2]
+    all_completed_tasks = all_assigned_to_you(user_id=user_id)[3]
 
     # tasks assigned by the user
     tasks_by_you_due_today = all_assigned_by_you(user_id=user_id)[0]
     tasks_by_you_overdue = all_assigned_by_you(user_id=user_id)[1]
     tasks_by_you_due_later = all_assigned_by_you(user_id=user_id)[2]
+    all_tasks_by_you_completed = all_assigned_by_you(user_id=user_id)[3]
 
-    due_in = [(x[4]-datetime.date.today()).days for x in task_list_due_later]
-    overdue_by = [(datetime.date.today() - x[4]).days for x in task_list_overdue]
+    # due_in = [(x[4]-datetime.date.today()).days for x in task_list_due_later]
+    # overdue_by = [(datetime.date.today() - x[4]).days for x in task_list_overdue]
 
-    by_you_due_in = [(x[4]-datetime.date.today()).days for x in tasks_by_you_due_later]
-    by_you_overdue = [(datetime.date.today() - x[4]).days for x in tasks_by_you_overdue]
+    # by_you_due_in = [(x[4]-datetime.date.today()).days for x in tasks_by_you_due_later]
+    # by_you_overdue = [(datetime.date.today() - x[4]).days for x in tasks_by_you_overdue]
 
     session['back'] = request.base_url
+
+    # Get the aggregated numbers of all tasks in each project
+    # for each project, get:
+    # 1. Open tasks - Overdue, due today, due later
+    # 2. Postpone completed tasks for now
+    open_tasks_list = []
+    for project in user_projects:
+        p_id = project[0]
+        p_name = project[1]
+        open_overdue_tasks = len(project_summary(p_id)[0])
+        open_duetoday_tasks = len(project_summary(p_id)[1])
+        open_duelater_tasks = len(project_summary(p_id)[2])
+        all_done_tasks = len(project_summary(p_id)[4])
+
+        open_tasks_list.append({
+            'project_id': p_id,
+            'project_name': p_name,
+            'open_overdue_tasks': open_overdue_tasks,
+            'open_duetoday_tasks': open_duetoday_tasks,
+            'open_duelater_tasks': open_duelater_tasks,
+            'all_open_tasks': open_overdue_tasks + open_duetoday_tasks + open_duelater_tasks,
+            'all_done_tasks': all_done_tasks,
+            'all_tasks': open_overdue_tasks + open_duetoday_tasks + open_duelater_tasks + all_done_tasks
+            })
+
+    all_tasks_all_projects = 0
+    for dict in open_tasks_list:
+        all_tasks_all_projects += dict['all_tasks']
+
 
     return render_template("project_tasks.html", users_in_project = all_users_list,
         project_id = None, all_users_list = all_users_list,
         user_projects = user_projects, project_name = project_name,
         task_list_due_today = task_list_due_today, task_list_overdue=task_list_overdue,
         task_list_due_later=task_list_due_later,
+        tasks_completed_by_you = all_completed_tasks,
         tasks_by_you_due_today=tasks_by_you_due_today, tasks_by_you_overdue=tasks_by_you_overdue,
         tasks_by_you_due_later=tasks_by_you_due_later,
-        due_in=due_in, overdue_by=overdue_by,
-        by_you_due_in = by_you_due_in, by_you_overdue = by_you_overdue)
+        tasks_completed_assigned_by_you = all_tasks_by_you_completed,
+        open_tasks_list = open_tasks_list,
+        all_tasks_all_projects = all_tasks_all_projects)
+        # due_in=due_in, overdue_by=overdue_by,
+        # by_you_due_in = by_you_due_in, by_you_overdue = by_you_overdue)
 
 
 
-@app.route('/update_task/<task_id>/<status>/', methods = ['GET', 'POST'])
-def update_task(task_id, status):
+@app.route('/update_task/<task_id>/<status>/<tab>/', methods = ['GET', 'POST'])
+def update_task(task_id, status, tab=''):
     user_id = username_to_userid(session.get('username'))
     try:
         c, conn = connection()
         c.execute(''' insert into task_actions (task_id, user_id, status)
             values (%s, %s, %s);''', (task_id, user_id, status))
         conn.commit()
-        return redirect(redirect_url())
+
+        return redirect(redirect_url() + tab)
     except Exception as e:
         flash(str(e))
     finally:
