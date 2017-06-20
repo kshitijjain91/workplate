@@ -197,8 +197,8 @@ def get_users_in_project(project_id):
     except Exception as e:
         return(str(e))
 
-@app.route('/new_task/<project_id>/', methods = ['GET', 'POST'])
-def new_task(project_id):
+@app.route('/new_task/<project_id>/<tab>/', methods = ['GET', 'POST'])
+def new_task(project_id, tab = '#secondtab'):
     users_in_project = get_users_in_project(project_id)
 
     if request.method == "POST":
@@ -234,7 +234,7 @@ def new_task(project_id):
 
 
             # return redirect(url_for('project_tasks', project_id = project_id))
-            return redirect(redirect_url() + '#secondtab')
+            return redirect(redirect_url() + tab)
 
         except Exception as e:
             flash(str(e))

@@ -23,23 +23,23 @@
 
     <div id="wrapper" class="toggled">
         <!-- Sidebar -->
-        <div id="sidebar-wrapper" style="background-color: #464646;">
+        <div id="sidebar-wrapper" >
             <ul class="sidebar-nav">
 
                 <li class="sidebar-brand">
-                <a href="{{url_for('new_project')}}" style="color: white;"
+                <a href="{{url_for('new_project')}}"
                 data-toggle="tooltip" title="Create a new project, add members and start assigning tasks." class="sidebar-item-link" data-placement="bottom">
                 Create New Project</a>
                 </li>
 
                 <li style="line-height: 2em;">
                 {% if project_name == 'All Projects' %}
-                <a href="{{url_for('all_project_tasks')}}" style="background-color: gray; color: white;">
+                <a href="{{url_for('all_project_tasks')}}" style="background-color: #3f3f3f; color: white;">
                 # All Projects
                 <!-- <span class="label label-as-badge" style="border-radius: 1em; background-color: #ffcc00; color: black;">5</span> -->
                 </a>
                 {% else %}
-                <a href="{{url_for('all_project_tasks')}}" style="color: white;'"># All Projects
+                <a href="{{url_for('all_project_tasks')}}"># All Projects
                 <!-- <span class="label label-as-badge" style="border-radius: 1em; background-color: #ffcc00; color: black;">5</span> -->
                 </a>
                 {% endif %}
@@ -48,12 +48,12 @@
                 {% for project in user_projects %}
                  <li style="line-height: 2em;">
                     {% if project_name == project[1] %}
-                    <a href="{{ url_for('project_tasks', project_id = project[0]) }}" style="background-color: gray; color: white;">
+                    <a href="{{ url_for('project_tasks', project_id = project[0]) }}" style="background-color: #3f3f3f; color: white;">
                     # {{project[1]}}
                    <!--  <span class="label label-as-badge" style="border-radius: 1em; background-color: #ffcc00; color: black;">0</span> -->
                     </a>
                     {% else %}
-                    <a href="{{ url_for('project_tasks', project_id = project[0]) }}" style="color: white;">
+                    <a href="{{ url_for('project_tasks', project_id = project[0]) }}" >
                     # {{project[1]}}
                     <!-- <span class="label label-as-badge" style="border-radius: 1em; background-color: #ffcc00; color: black;">2</span> -->
                     </a>

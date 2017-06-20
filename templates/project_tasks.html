@@ -287,7 +287,7 @@
                       {% if project_id is not none %}
                       <div class="container-fluid">
                           <!-- inline form -->
-                          <form class="form-inline" action="{{ url_for('new_task', project_id = project_id) }}" method="POST" enctype="multipart/form-data">
+                          <form class="form-inline" action="{{ url_for('new_task', project_id = project_id, tab = '#secondtab') }}" method="POST" enctype="multipart/form-data">
 
                           <h4>Add a new task in <a href="#">{{project_name}}</a></h4>
                             <div class="form-group" >
@@ -670,7 +670,7 @@
                     {% if project_id is not none %}
                       <div class="container-fluid">
                           <!-- inline form -->
-                          <form class="form-inline" action="{{ url_for('new_task', project_id = project_id) }}" method="POST" enctype="multipart/form-data">
+                          <form class="form-inline" action="{{ url_for('new_task', project_id = project_id, tab = '#fourthtab') }}" method="POST" enctype="multipart/form-data">
 
                           <h4>Add a new task in <a href="#">{{project_name}}</a></h4>
                             <div class="form-group" >
