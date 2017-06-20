@@ -766,7 +766,7 @@ def all_project_tasks():
     # get all users
     all_users_list = get_all_users()
     user_projects = get_user_projects(username_to_userid(session.get('username')))
-    project_name = 'All tasks'
+    project_name = 'All Projects'
 
     # tasks assigned by the user
     task_list_due_today = all_assigned_to_you(user_id=user_id)[0]
@@ -813,8 +813,8 @@ def all_project_tasks():
             })
 
     all_tasks_all_projects = 0
-    for dict in open_tasks_list:
-        all_tasks_all_projects += dict['all_tasks']
+    for dict1 in open_tasks_list:
+        all_tasks_all_projects += dict1['all_tasks']
 
 
     return render_template("project_tasks.html", users_in_project = all_users_list,

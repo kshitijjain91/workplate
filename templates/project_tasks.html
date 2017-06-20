@@ -34,6 +34,14 @@
                         <!-- tab content -->
                         <div class="tab-content">
 
+                              {% if task_list_overdue|length + task_list_due_today|length + task_list_due_later|length == 0 %}
+
+                              <div class="tab-pane fade active in col-md-10 column" id="open_assigned_to_you">
+                                <span class="text-center">
+                                <h3><small>There are no open tasks in this project</small></h3>
+                                </span>
+                              </div>
+                              {% else %}
                               <!-- open overdue assigned to you tasks -->
                               <div class="tab-pane fade active in col-md-10 column" id="open_assigned_to_you">
 
@@ -52,7 +60,7 @@
                                     <br>
                                     {{task[5]}} assigned to you<br>
 
-                                    {% if project_name == 'All tasks' %}
+                                    {% if project_name == 'All Projects' %}
                                     In {{task[6]}}<br>
                                     {% endif %}
 
@@ -102,7 +110,7 @@
                                     {{task[2]}}<br>
                                     {{task[5]}} assigned to you<br>
 
-                                    {% if project_name == 'All tasks' %}
+                                    {% if project_name == 'All Projects' %}
                                     In {{task[6]}}<br>
                                     {% endif %}
 
@@ -151,7 +159,7 @@
                                     {{task[2]}}<br>
                                     {{task[5]}} assigned to you<br>
 
-                                    {% if project_name == 'All tasks' %}
+                                    {% if project_name == 'All Projects' %}
                                     In {{task[6]}}<br>
                                     {% endif %}
 
@@ -193,9 +201,21 @@
 
                               </div>
                               <!-- open assigned to you tasks -->
+                              {% endif %}
 
 
                               <!-- completed assigned to you tasks -->
+                              {% if tasks_completed_by_you|length == 0 %}
+
+                                <div class="tab-pane fade col-md-10 column" id="completed_assigned_to_you">
+                                  <span class="text-center">
+                                  <h3><small>There are no completed tasks in this project</small></h3>
+                                  </span>
+                                </div>
+
+                              {% else %}
+
+
                               <div class="tab-pane fade col-md-10" id="completed_assigned_to_you">
 
                               <table class="table table-hover" style="table-layout: fixed;">
@@ -211,7 +231,7 @@
                                     {{task[2]}}<br>
                                     {{task[5]}} assigned to you<br>
 
-                                    {% if project_name == 'All tasks' %}
+                                    {% if project_name == 'All Projects' %}
                                     In {{task[7]}}<br>
                                     {% endif %}
 
@@ -246,9 +266,11 @@
                               {% endfor %}
                               <!-- all completed tasks assigned to you -->
 
+
                               </table>
 
                               </div>
+                            {% endif %}
                               <!-- completed assigned to you tasks -->
 
                       </div><!-- tab content -->
@@ -327,6 +349,16 @@
 
                           <!-- tab content -->
                         <div class="tab-content">
+
+                            {% if tasks_by_you_overdue|length + tasks_by_you_due_today|length + tasks_by_you_due_later|length == 0 %}
+
+                              <div class="tab-pane fade active in col-md-10 column" id="open_assigned_by_you">
+                                <span class="text-center">
+                                <h3><small>There are no open tasks in this project</small></h3>
+                                </span>
+                              </div>
+                            {% else %}
+
                             <div class="tab-pane fade active in col-md-10" id="open_assigned_by_you">
 
 
@@ -342,7 +374,7 @@
                                     {{task[2]}}<br>
                                     Assigned to {{task[5]}}<br>
 
-                                    {% if project_name == 'All tasks' %}
+                                    {% if project_name == 'All Projects' %}
                                     In {{task[6]}}<br>
                                     {% endif %}
 
@@ -389,7 +421,7 @@
                                     {{task[2]}}<br>
                                     Assigned to {{task[5]}}<br>
 
-                                    {% if project_name == 'All tasks' %}
+                                    {% if project_name == 'All Projects' %}
                                     In {{task[6]}}<br>
                                     {% endif %}
 
@@ -436,7 +468,7 @@
                                     {{task[2]}}<br>
                                     Assigned to {{task[5]}}<br>
 
-                                    {% if project_name == 'All tasks' %}
+                                    {% if project_name == 'All Projects' %}
                                     In {{task[6]}}<br>
                                     {% endif %}
 
@@ -475,7 +507,19 @@
                               </table>
 
                             </div>
+                            {% endif %}
 
+
+                            <!-- completed assigned by you -->
+                            {% if tasks_completed_assigned_by_you|length == 0 %}
+
+                              <div class="tab-pane fade col-md-10 column" id="completed_assigned_by_you">
+                                <span class="text-center">
+                                <h3><small>There are no completed tasks in this project</small></h3>
+                                </span>
+                              </div>
+
+                            {% else %}
 
                             <div class="tab-pane fade col-md-10" id="completed_assigned_by_you">
 
@@ -491,7 +535,7 @@
                                     {{task[2]}}<br>
                                     Completed by {{task[5]}}<br>
 
-                                    {% if project_name == 'All tasks' %}
+                                    {% if project_name == 'All Projects' %}
                                     In {{task[7]}}<br>
                                     {% endif %}
 
@@ -528,6 +572,8 @@
                               </table>
                             </div>
 
+                            {% endif %}
+
 
                         </div>
                         <!-- tab content -->
@@ -542,70 +588,130 @@
                 <!-- fourth tab content -->
                 <div class="container-fluid tab-pane fade active in" id="fourthtab">
 
-                  {% if project_name == 'All tasks' %}
-                  <div class="container-fluid col-md-12">
+                  {% if project_name == 'All Projects' %}
 
-                  <h3>Summary of all your projects</h3><br>
+                    {% if all_tasks_all_projects == 0 %}
 
-                    <div class="col-md-2">
-
-                      <span class="label label-danger">Overdue</span><br>
-                      <span class="label label-warning">Due Today</span><br>
-                      <span class="label label-success">Due Later</span><br>
-                      <span class="label label-primary">Completed</span>
+                    <div class="container-fluid">
+                      <h3 class="text-center">
+                        <small>
+                        You look new here.
+                        Create a new project from top-left and start assigning tasks to your teammates.
+                        </small>
+                      </h3>
 
                     </div>
+                    {% else %}
 
-                  <div class="col-md-9">
-                    {% for project in open_tasks_list %}
-                    <div class="row">
-                      <div class="col-md-4">
+                        <div class="container-fluid col-md-12">
 
-                        <h4><a href="{{url_for('project_tasks', project_id=project['project_id'])}}">
-                          {{project['project_name']}}
-                        </a></h4>
-                      </div>
+                        <h3>Summary of all your projects</h3><br>
 
-                      <div class="col-md-8">
-                        {% if project['all_tasks'] != 0 %}
-                        <!-- progress bar -->
-                        <div class="progress">
+                          <div class="col-md-2">
 
-                         <div class="progress-bar progress-bar-default"
-                          style="width: {{ 100*(project['all_done_tasks'] / project['all_tasks'] ) }}%">
-                            {{project['all_done_tasks']}}
+                            <span class="label label-danger">Overdue</span><br>
+                            <span class="label label-warning">Due Today</span><br>
+                            <span class="label label-success">Due Later</span><br>
+                            <span class="label label-primary">Completed</span>
+
                           </div>
 
-                          <div class="progress-bar progress-bar-danger"
-                          style="width: {{ 100*(project['open_overdue_tasks'] / project['all_tasks']) }}%">
-                            {{project['open_overdue_tasks']}}
-                          </div>
+                        <div class="col-md-9">
+                          {% for project in open_tasks_list %}
+                          <div class="row">
+                            <div class="col-md-4">
 
-                          <div class="progress-bar progress-bar-warning"
-                          style="width: {{ 100*(project['open_duetoday_tasks'] / project['all_tasks']) }}%">
-                          {{project['open_duetoday_tasks']}}
-                          </div>
+                              <h4><a href="{{url_for('project_tasks', project_id=project['project_id'])}}">
+                                {{project['project_name']}}
+                              </a></h4>
+                            </div>
 
-                          <div class="progress-bar progress-bar-success"
-                          style="width: {{ 100*(project['open_duelater_tasks'] / project['all_tasks']) }}%">
-                            {{project['open_duelater_tasks']}}
-                          </div>
+                            <div class="col-md-8">
+                              {% if project['all_tasks'] != 0 %}
+                              <!-- progress bar -->
+                              <div class="progress">
+
+                               <div class="progress-bar progress-bar-default"
+                                style="width: {{ 100*(project['all_done_tasks'] / project['all_tasks'] ) }}%">
+                                  {{project['all_done_tasks']}}
+                                </div>
+
+                                <div class="progress-bar progress-bar-danger"
+                                style="width: {{ 100*(project['open_overdue_tasks'] / project['all_tasks']) }}%">
+                                  {{project['open_overdue_tasks']}}
+                                </div>
+
+                                <div class="progress-bar progress-bar-warning"
+                                style="width: {{ 100*(project['open_duetoday_tasks'] / project['all_tasks']) }}%">
+                                {{project['open_duetoday_tasks']}}
+                                </div>
+
+                                <div class="progress-bar progress-bar-success"
+                                style="width: {{ 100*(project['open_duelater_tasks'] / project['all_tasks']) }}%">
+                                  {{project['open_duelater_tasks']}}
+                                </div>
+                              </div>
+                              <!-- progress bar -->
+                              {% else %}
+                              <p class="text-muted">No tasks assigned in this project</p>
+                              {% endif %}
+                            </div>
+                          </div> <!-- row -->
+                          {% endfor %}
+                        </div> <!-- col-md-9 -->
+
                         </div>
-                        <!-- progress bar -->
-                        {% else %}
-                        <p class="text-muted">No tasks assigned in this project</p>
-                        {% endif %}
-                      </div>
-                    </div> <!-- row -->
-                    {% endfor %}
-                  </div> <!-- col-md-9 -->
-
-                  </div>
+                      {% endif %}
 
                   {% else %}
 
+
+
+                    {% if project_id is not none %}
+                      <div class="container-fluid">
+                          <!-- inline form -->
+                          <form class="form-inline" action="{{ url_for('new_task', project_id = project_id) }}" method="POST" enctype="multipart/form-data">
+
+                          <h4>Add a new task in <a href="#">{{project_name}}</a></h4>
+                            <div class="form-group" >
+                              <select class="selectpicker show-menu-arrow show-tick"
+                                  title="Assign to" data-width="200px;" data-style="btn-default"
+                                  data-live-search="true" name="assigned_to" required>
+
+                                    {% for username in users_in_project %}
+                                      <option>{{username[0]}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                              <input type="text" class="form-control" id="exampl_1" placeholder="Description"
+                              style="width: 450px;" name="task_description" required>
+                            </div>
+                            <div class="form-group">
+                              <div class="input-group date form_date" data-date-format="dd MM yyyy" data-link-field="dtp_input_1" data-link-format="yyyy-mm-dd">
+                                            <input class="form-control" size="20" placeholder="Due date" type="text" readonly required>
+                                            <!-- <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span> -->
+                                            <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                              </div>
+                              <input type="hidden" id="dtp_input_1" name="due_date" style="width: 100px;"><br/>
+                            </div>
+                            <span style="display: inline-block; width: 30px;"></span>
+                            <button type="submit" class="btn btn-success">
+                          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                          Add Task
+                          </button>
+                          </form>
+                          <!-- inline form -->
+                      </div>
+                      <br><br><!-- break after inline form-->
+                    {% endif %}
+
+
+
+
                     <div class="container-fluid">
-                      <h4>All tasks</h4><br>
+
+                      <h4>All Tasks</h4><br>
 
                       <div class="col-md-2">
                       <ul class="nav nav-pills nav-stacked" id="summarytabs">
@@ -629,6 +735,17 @@
 
 
                       <div class="tab-content">
+
+
+                            {% if all_done_tasks|length == 0 %}
+
+                              <div class="container-fluid tab-pane fade col-md-10" id="completed">
+                                <span class="text-center">
+                                <h3><small>There are no completed tasks in this project</small></h3>
+                                </span>
+                              </div>
+                            {% else %}
+
 
                               <!-- completed tasks -->
                               <div class="container-fluid tab-pane fade col-md-10" id="completed">
@@ -685,10 +802,20 @@
                               <!-- </div> -->
                               <!-- completed tasks -->
                               </div>
+                            {% endif %}
 
 
 
-                      <div class="tab-pane fade active in col-md-10" id="open">
+                    {% if open_overdue_tasks|length + open_duetoday_tasks|length + open_duelater_tasks|length == 0 %}
+
+                              <div class="container-fluid tab-pane fade active in col-md-10" id="open">
+                                <span class="text-center">
+                                <h3><small>There are no open tasks in this project</small></h3>
+                                </span>
+                              </div>
+                    {% else %}
+
+                      <div class="container-fluid tab-pane fade active in col-md-10" id="open">
 
                       <table class="table table-hover" style="table-layout: fixed;">
                       <!-- Overdue open tasks -->
@@ -845,6 +972,7 @@
 
                       </table>
                       </div><!-- col-md-10-->
+                    {% endif %}
 
 
 
