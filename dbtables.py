@@ -23,8 +23,6 @@ finally:
 
 
 
-
-
 # create projects table
 conn = pymysql.connect(host="localhost", # your host, usually localhost
                      user=dbconfig.USER, # your username
@@ -61,6 +59,37 @@ except Exception as e:
 finally:
     conn.close()
 
+# add first name and last name to users table
+conn = pymysql.connect(host="localhost", # your host, usually localhost
+                     user=dbconfig.USER, # your username
+                      passwd=dbconfig.PASSWORD, # your password
+                      db=dbconfig.DATABASE) # name of the data base
+
+# first name
+try:
+    with conn.cursor() as cursor:
+        cursor.execute('''alter table users
+          add first_name varchar(200);''')
+        conn.commit()
+except Exception as e:
+    print("Exception in adding first name column: {0}".format(e))
+finally:
+    conn.close()
+
+conn = pymysql.connect(host="localhost", # your host, usually localhost
+                     user=dbconfig.USER, # your username
+                      passwd=dbconfig.PASSWORD, # your password
+                      db=dbconfig.DATABASE) # name of the data base
+# last name
+try:
+    with conn.cursor() as cursor:
+        cursor.execute('''alter table users
+          add last_name varchar(200);''')
+        conn.commit()
+except Exception as e:
+    print("Exception in adding last name column: {0}".format(e))
+finally:
+    conn.close()
 
 
 
@@ -157,6 +186,94 @@ except Exception as e:
   print(str(e))
 finally:
     conn.close()
+
+
+# create teams table
+# create projects table
+conn = pymysql.connect(host="localhost", # your host, usually localhost
+                     user=dbconfig.USER, # your username
+                      passwd=dbconfig.PASSWORD, # your password
+                      db=dbconfig.DATABASE) # name of the data base
+try:
+    with conn.cursor() as cursor:
+        cursor.execute('''create table if not exists teams
+            (team_id int not null auto_increment primary key,
+            team_name varchar(100) not null,
+            creator_id int,
+            created_at timestamp on update current_timestamp
+            not null default current_timestamp,
+            foreign key (creator_id) references users(user_id));''')
+        conn.commit()
+except Exception as e:
+    print("Exception in creating table: {0}".format(e))
+finally:
+    conn.close()
+
+
+# create users_teams table
+conn = pymysql.connect(host="localhost", # your host, usually localhost
+                     user=dbconfig.USER, # your username
+                      passwd=dbconfig.PASSWORD, # your password
+                      db=dbconfig.DATABASE) # name of the data base
+
+try:
+    with conn.cursor() as cursor:
+        cursor.execute('''create table if not exists users_teams
+            (usr_team_id int not null auto_increment primary key,
+            user_id int,
+            team_id int,
+            foreign key (user_id) references users(user_id),
+            foreign key (team_id) references teams(team_id)
+            );''')
+        conn.commit()
+except Exception as e:
+    print(str(e))
+finally:
+    conn.close()
+
+
+# create projects_teams table
+conn = pymysql.connect(host="localhost", # your host, usually localhost
+                     user=dbconfig.USER, # your username
+                      passwd=dbconfig.PASSWORD, # your password
+                      db=dbconfig.DATABASE) # name of the data base
+
+try:
+    with conn.cursor() as cursor:
+        cursor.execute('''create table if not exists projects_teams
+            (project_team_id int not null auto_increment primary key,
+            project_id int,
+            team_id int,
+            foreign key (project_id) references projects(project_id),
+            foreign key (team_id) references teams(team_id)
+            );''')
+        conn.commit()
+except Exception as e:
+    print(str(e))
+finally:
+    conn.close()
+
+
+
+# manually run after creating team tables
+
+# create dummy team
+# insert into teams (team_name, creator_id) values ('dummy', 1);
+
+# put all current dummy users into the dummy team
+# insert into users_teams (user_id, team_id) values ('%s', 1);
+# %s = all users id
+
+
+# put all current dummy projects into the dummy team
+# insert into projects_teams (project_id, team_id) values (%s, 1);
+
+
+
+
+
+
+
 
 
 

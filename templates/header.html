@@ -6,10 +6,12 @@
     <meta name="viewport" content="width=device-width, shrink-to-fit=no, initial-scale=1">
     <title>Workplate</title>
     <meta name="viewport" content = "width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap-datetimepicker.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/simple-sidebar.css') }}">
+
     <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/timeline2.css')}}"> -->
 
 
@@ -27,34 +29,75 @@
             <ul class="sidebar-nav">
 
                 <li class="sidebar-brand">
-                <a href="{{url_for('new_project')}}"
-                data-toggle="tooltip" title="Create a new project, add members and start assigning tasks." class="sidebar-item-link" data-placement="bottom">
-                Create New Project</a>
+                    <div class="dropdown">
+
+                        {% if session.team_name != None %}
+                          <a class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                          {{ session.team_name }}
+                            <span class="caret"></span>
+                          </a>
+                        {% else %}
+                            <a class="dropdown-toggle" type="button" id="New Team" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                              New Team
+                                <span class="caret"></span>
+                              </a>
+                        {% endif %}
+
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+
+                        {% for team in user_teams %}
+                            {% if session.team_name != team[1] %}
+                            <li><a href="{{url_for('change_team', team_id = team[0])}}" style="color: black;">{{team[1]}}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        <li>
+                        <a href="{{url_for('new_team')}}" style="color: black;">
+                        Create a new team
+                        </a>
+                        </li>
+
+                      </ul>
+                    </div>
                 </li>
 
                 <li style="line-height: 2em;">
-                {% if project_name == 'All Projects' %}
-                <a href="{{url_for('all_project_tasks')}}" style="background-color: #3f3f3f; color: white;">
-                # All Projects
-                <!-- <span class="label label-as-badge" style="border-radius: 1em; background-color: #ffcc00; color: black;">5</span> -->
+
+                {% if user_teams|length !=0 %}
+                <a href="{{url_for('new_project')}}"
+                data-toggle="tooltip" title="Create a new project, add members and start assigning tasks." class="sidebar-item-link" data-placement="bottom">
+                New Project
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                 </a>
+                {% endif %}
+
+                <br>
+
+                {% if project_name == 'All Projects' %}
+                    {% if user_teams|length !=0 %}
+                    <a href="{{url_for('all_project_tasks')}}" style="background-color: #3f3f3f; color: white;">
+                    All Projects
+                    <!-- <span class="label label-as-badge" style="border-radius: 1em; background-color: #ffcc00; color: black;">5</span> -->
+                    </a>
+                    {% endif %}
+
                 {% else %}
-                <a href="{{url_for('all_project_tasks')}}"># All Projects
+                <a href="{{url_for('all_project_tasks')}}">All Projects
                 <!-- <span class="label label-as-badge" style="border-radius: 1em; background-color: #ffcc00; color: black;">5</span> -->
                 </a>
                 {% endif %}
                 </li>
-                <br>
+
                 {% for project in user_projects %}
                  <li style="line-height: 2em;">
                     {% if project_name == project[1] %}
                     <a href="{{ url_for('project_tasks', project_id = project[0]) }}" style="background-color: #3f3f3f; color: white;">
-                    # {{project[1]}}
+                    - {{project[1]}}
                    <!--  <span class="label label-as-badge" style="border-radius: 1em; background-color: #ffcc00; color: black;">0</span> -->
                     </a>
                     {% else %}
                     <a href="{{ url_for('project_tasks', project_id = project[0]) }}" >
-                    # {{project[1]}}
+                     - {{project[1]}}
                     <!-- <span class="label label-as-badge" style="border-radius: 1em; background-color: #ffcc00; color: black;">2</span> -->
                     </a>
                     {% endif %}
@@ -73,24 +116,49 @@
                 <nav class="navbar navbar-default navbar-static-top" style="width: 100%; white-space: nowrap; padding: 0; margin: 0;">
                       <div class="container-fluid">
                         <!-- Brand and toggle get grouped for better mobile display -->
-                        <!-- <div class="navbar-header">
+                        <div class="navbar-header">
                           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
                             <span class="sr-only">Toggle navigation</span>
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                           </button>
-                          <a class="navbar-brand" href="#">Home</a>
-                        </div> -->
+
+                          {% if project_name != 'All Projects' %}
+                    <a class="navbar-brand" href="{{ url_for('project_settings', project_id = project_id, project_name = project_name) }}">
+                    {{project_name}}
+                    <!-- <br> -->
+                    <!-- <span class="glyphicon glyphicon-user" aria-hidden="true"></span> -->
+                    <!-- <small>{{users_in_project|length}}</small> -->
+                    </a>
+                {% else %}
+                    <a class="navbar-brand" href="">{{project_name}}</a>
+                {% endif %}
+
+                <!-- {% if project_name != 'All Projects' %} -->
+                <!-- <span class="text-muted"> -->
+                <!-- {{users_in_project|length}} members - -->
+                <!-- {% for i in range(users_in_project|length - 1) %} -->
+                <!-- {{users_in_project[i][0]}}, -->
+                <!-- {% endfor %} -->
+                <!-- {{ users_in_project[users_in_project|length - 1][0] }} -->
+                <!-- </span> -->
+                <!-- {% endif %} -->
+
+                        </div>
 
                         <!-- Collect the nav links, forms, and other content for toggling -->
                         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+
+
+
                           <form class="navbar-form navbar-left">
                             <div class="form-group">
                               <input type="text" class="form-control" placeholder="Search">
                             </div>
                             <button type="submit" class="btn btn-default">Go!</button>
                           </form>
+
                           <ul class="nav navbar-nav navbar-right">
                             <li class="dropdown">
                               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>
@@ -111,19 +179,27 @@
 
             <div class="container-fluid">
 
+                <!-- {% if project_name != 'All Projects' %} -->
+                    <!-- <a href="{{ url_for('project_settings', project_id = project_id, project_name = project_name) }}" style="color: black;"> -->
+                    <!-- <h3>{{project_name}}</h3> -->
+                    <!-- </a> -->
+                <!-- {% else %} -->
+                    <!-- <h3>{{project_name}}</h3> -->
+                <!-- {% endif %} -->
+
+                <!-- {% if project_name != 'All Projects' %} -->
+                <!-- <span class="text-muted"> -->
+                <!-- {{users_in_project|length}} members - -->
+                <!-- {% for i in range(users_in_project|length - 1) %} -->
+                <!-- {{users_in_project[i][0]}}, -->
+                <!-- {% endfor %} -->
+                <!-- {{ users_in_project[users_in_project|length - 1][0] }} -->
+                <!-- </span> -->
+                <!-- {% endif %} -->
+
                 <!--  nav tabs-->
                 <ul id="mytabs" class="nav nav-tabs">
-                <h3>{{project_name}}<br>
-                {% if project_name != 'All Projects' %}
-                <small>
-                {{users_in_project|length}} members -
-                {% for i in range(users_in_project|length - 1) %}
-                {{users_in_project[i][0]}},
-                {% endfor %}
-                {{ users_in_project[users_in_project|length - 1][0] }}
-                </small>
-                {% endif %}
-                </h3>
+
                 <br>
 
                 <li role="presentation" class="active"><a href="#fourthtab" data-toggle="tab">All Tasks</a></li>

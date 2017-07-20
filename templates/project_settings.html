@@ -1,0 +1,37 @@
+{% extends "empty_header.html" %}
+{% block body %}
+
+
+<div class="container-fluid col-md-6 col-md-offset-3">
+    <br><br><br><br>
+
+    <a href="{{url_for('project_tasks', project_id = project_id)}}">
+    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true" style="font-size: 24px;
+    color: black;"></span>
+    </a>
+
+    <h3>Edit project details</h3>
+    <hr>
+    <form action="#" method="POST" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="project_name">Project Name</label>
+            <input type="text" class="form-control" id="project_name"  name="project_name" placeholder = "{{project_name}}">
+          </div>
+
+          <div class="row">
+          <h3>Members</h3>
+          {% for user in users_in_project %}
+          {{user[0]}}
+          {% endfor %}
+          </div>
+          <br>
+          <h3>Add member</h3>
+
+
+
+
+            <button type="submit" class="btn btn-success">Save</button>
+    </form>
+</div>
+
+{% endblock %}

@@ -63,6 +63,12 @@
       <form method=post action="/signup/">
       <div class="form-group">
         <dl>
+        <h5>First Name</h5>
+        {{ form.first_name(class='form-control', placeholder="First Name") }}
+        <br>
+        <h5>Last Name</h5>
+        {{ form.last_name(class='form-control', placeholder="Last Name") }}
+        <br>
         <h5>Email</h5>
         {{ form.email(class='form-control', placeholder="youremail@example.com") }}
         <br>
@@ -74,7 +80,7 @@
         <br>
         {{ render_field(form.accept_tos) }}
         </dl>
-        <p><input type=submit value=Register class="btn btn-success"></p>
+        <p><input type=submit value=Signup class="btn btn-success"></p>
       </form>
 
       {% if error %}
@@ -89,6 +95,13 @@
       </div>
       </div>
 
+    </div>
+
+    <div id="sign-in">
+        <h1>Sign In</h1>
+        <p>
+        <a href={{ url_for('oauth_authorize', provider='google') }}>
+        Login with Google</a>
     </div>
 
     <!-- jQuery -->

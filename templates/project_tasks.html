@@ -61,7 +61,7 @@
                                     {{task[5]}} assigned to you<br>
 
                                     {% if project_name == 'All Projects' %}
-                                    In {{task[6]}}<br>
+                                    In <a href="{{ url_for('project_tasks', project_id = task[-1]) }}">{{task[6]}}</a> <br>
                                     {% endif %}
 
                                     <span class="label label-danger">Overdue</span>
@@ -111,7 +111,7 @@
                                     {{task[5]}} assigned to you<br>
 
                                     {% if project_name == 'All Projects' %}
-                                    In {{task[6]}}<br>
+                                    In <a href="{{ url_for('project_tasks', project_id = task[-1]) }}">{{task[6]}}</a> <br>
                                     {% endif %}
 
                                     <span class="label label-warning">Due today</span>
@@ -160,7 +160,7 @@
                                     {{task[5]}} assigned to you<br>
 
                                     {% if project_name == 'All Projects' %}
-                                    In {{task[6]}}<br>
+                                    In <a href="{{ url_for('project_tasks', project_id = task[-1]) }}">{{task[6]}}</a> <br>
                                     {% endif %}
 
                                     <span class="label label-success">Due later</span>
@@ -232,7 +232,7 @@
                                     {{task[5]}} assigned to you<br>
 
                                     {% if project_name == 'All Projects' %}
-                                    In {{task[7]}}<br>
+                                    In <a href="{{ url_for('project_tasks', project_id = task[-1]) }}">{{task[7]}}</a> <br>
                                     {% endif %}
 
                                     <span style="color: gray;">Completed on {{task[6]}}</span><br>
@@ -375,7 +375,7 @@
                                     Assigned to {{task[5]}}<br>
 
                                     {% if project_name == 'All Projects' %}
-                                    In {{task[6]}}<br>
+                                    In <a href="{{ url_for('project_tasks', project_id = task[-1])}}">{{ task[6] }}</a><br>
                                     {% endif %}
 
                                     <span class="label label-danger">Overdue</span>
@@ -422,7 +422,7 @@
                                     Assigned to {{task[5]}}<br>
 
                                     {% if project_name == 'All Projects' %}
-                                    In {{task[6]}}<br>
+                                    In <a href="{{ url_for('project_tasks', project_id = task[-1])}}">{{ task[6] }}</a><br>
                                     {% endif %}
 
                                     <span class="label label-warning">Due Today</span>
@@ -469,7 +469,7 @@
                                     Assigned to {{task[5]}}<br>
 
                                     {% if project_name == 'All Projects' %}
-                                    In {{task[6]}}<br>
+                                    In <a href="{{ url_for('project_tasks', project_id = task[-1])}}">{{ task[6] }}</a><br>
                                     {% endif %}
 
                                     <span class="label label-success">Due Later</span>
@@ -536,7 +536,7 @@
                                     Completed by {{task[5]}}<br>
 
                                     {% if project_name == 'All Projects' %}
-                                    In {{task[7]}}<br>
+                                    In <a href="{{ url_for('project_tasks', project_id = task[-1])}}">{{ task[7] }}</a><br>
                                     {% endif %}
 
                                     <span style="color: gray;"> On {{task[6]}}</span><br>
@@ -590,12 +590,22 @@
 
                   {% if project_name == 'All Projects' %}
 
-                    {% if all_tasks_all_projects == 0 %}
+                    {% if user_teams|length == 0 %}
 
                     <div class="container-fluid">
                       <h3 class="text-center">
                         <small>
-                        You look new here.
+                        Welcome, {{session.first_name}}. <br>
+                        <a href="{{ url_for('new_team')}}">Create a new team</a> and add or invite members.
+                        </small>
+                      </h3>
+                    </div>
+
+                    {% elif all_tasks_all_projects == 0 %}
+
+                    <div class="container-fluid">
+                      <h3 class="text-center">
+                        <small>
                         Create a new project from top-left and start assigning tasks to your teammates.
                         </small>
                       </h3>
@@ -777,7 +787,7 @@
                                     <!-- <div class="col-md-2"> -->
                                         <div class="btn-group">
                                           <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            {{task[6]}} <span class="caret"></span>
+                                            {{task[6]|title}} <span class="caret"></span>
                                           </button>
                                           <ul class="dropdown-menu">
                                             <li><a href="{{url_for('update_task', task_id=task[0], status='open',
@@ -848,7 +858,7 @@
                           <div class="col-md-2">
                               <div class="btn-group">
                                 <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                  {{task[6]}} <span class="caret"></span>
+                                  {{task[6]|title}} <span class="caret"></span>
                                 </button>
                                 <ul class="dropdown-menu">
                                   <li><a href="{{url_for('update_task', task_id=task[0], status='done',
@@ -897,7 +907,7 @@
                           <div class="col-md-2">
                               <div class="btn-group">
                                 <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                  {{task[6]}} <span class="caret"></span>
+                                  {{task[6]|title}} <span class="caret"></span>
                                 </button>
                                 <ul class="dropdown-menu">
                                   <li><a href="{{url_for('update_task', task_id=task[0], status='done',
@@ -947,7 +957,7 @@
                           <div class="col-md-2">
                               <div class="btn-group">
                                 <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                  {{task[6]}} <span class="caret"></span>
+                                  {{task[6]|title}} <span class="caret"></span>
                                 </button>
                                 <ul class="dropdown-menu">
                                   <li><a href="{{url_for('update_task', task_id=task[0], status='done',

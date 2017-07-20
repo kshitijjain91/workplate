@@ -1,0 +1,9 @@
+Dear {{ invitee_email }},
+
+{{ inviter_email }} has invited you to join workplate. Click the link below to join his team:
+
+{{ url_for('homepage', _external=True) }}
+
+Regards,
+
+Workplate admin

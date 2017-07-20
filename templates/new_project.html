@@ -17,7 +17,7 @@
                             <br><br>
 
                             <form method="post" action="{{url_for('new_project')}}">
-                                    <h1>Create a new project</h1>
+                                    <h1>Create a new project in '{{session.team_name}}'</h1>
                                     <br>
                                   <div class="form-group form-group-lg">
                                     <label for="projectname"><h4>Project Name</h4></label>
@@ -33,7 +33,7 @@
                                   title="Add people" data-width="75%" data-style="btn-default btn-lg"
                                   data-live-search="true" name="users_in_project">
 
-                                    {% for username in all_users_list %}
+                                    {% for username in users_in_team %}
                                     {% if username[0] != session.username %}
                                       <option style="font-size: 18px">{{username[0]}}</option>
                                     {% endif %}
