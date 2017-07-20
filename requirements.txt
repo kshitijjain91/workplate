@@ -1,8 +1,13 @@
 appdirs==1.4.3
+beautifulsoup4==4.6.0
 blinker==1.4
+bs4==0.0.1
+certifi==2017.4.17
+chardet==3.0.4
 click==6.7
 Flask==0.12.1
 Flask-Mail==0.9.1
+idna==2.5
 itsdangerous==0.24
 Jinja2==2.9.6
 MarkupSafe==1.0
@@ -10,6 +15,9 @@ packaging==16.8
 passlib==1.7.1
 PyMySQL==0.7.11
 pyparsing==2.2.0
+rauth==0.7.3
+requests==2.18.1
 six==1.10.0
+urllib3==1.21.1
 Werkzeug==0.12.1
 WTForms==2.1
