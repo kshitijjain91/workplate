@@ -1,7 +1,11 @@
-# Project Overdue
+# Project Workplate
 
-Project overdue is a lightweight web app created for (mainly junior level) employees to keep track of their daily
+Project workplate is a lightweight web app created for (mainly junior level) employees to keep track of their daily
 office tasks.
+
+It is deployed at the following URLs:
+- www.workplate.in
+- www.workplate.co
 
 The obective is to make it extremely easy for people to know 1) what tasks they should have had done already, 2) what they have to do 'by today' and 3) what is due tomorrow or later.
 
