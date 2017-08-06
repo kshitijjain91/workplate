@@ -45,17 +45,27 @@
 
                       <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
 
+                        <li>
+
+                        <a href="{{url_for('new_team')}}" style="color: black;">
+                        Create a new team
+                        </a>
+
+                        <a href="#" style="color:black;">
+                            Add new members to team
+                        </a>
+
+                        </li>
+
+                        <li role="separator" class="divider"></li>
+
                         {% for team in user_teams %}
                             {% if session.team_name != team[1] %}
                             <li><a href="{{url_for('change_team', team_id = team[0])}}" style="color: black;">{{team[1]}}</a></li>
                             {% endif %}
                         {% endfor %}
 
-                        <li>
-                        <a href="{{url_for('new_team')}}" style="color: black;">
-                        Create a new team
-                        </a>
-                        </li>
+
 
                       </ul>
                     </div>

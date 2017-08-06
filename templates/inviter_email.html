@@ -1,6 +1,9 @@
-<p>Hi!</p>
-<p>{{ session.email }} has invited
-you to join the team <a href="{{ url_for('signup', _external=True) }}">{{ team_name|title }} on Workplate.</a></p>
+<p>Hey there!</p>
+<p>You have been invited by {{ session.email }}
+to join the team <a href="{{ url_for('signup_invite', team_name = team_name, team_id = team_id, _external=True) }}">{{ team_name }} on Workplate.</a></p>
+
+<!-- {{ team_name }} -->
+<!-- {{ team_id }} -->
 
 <br>
 

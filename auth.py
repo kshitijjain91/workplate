@@ -1,4 +1,5 @@
-from flask import url_for, current_app, redirect, request
+from flask import url_for, redirect, request
+from flask import current_app as app
 from rauth import OAuth2Service
 
 import json, bs4, requests
@@ -12,7 +13,7 @@ class OAuthSignIn():
 
     def __init__(self, provider_name):
         self.provider_name = provider_name
-        credentials = current_app.config['OAUTH_CREDENTIALS'][provider_name]
+        credentials = app.config['OAUTH_CREDENTIALS'][provider_name]
         self.consumer_id = credentials['id']
         self.consumer_secret = credentials['secret']
 

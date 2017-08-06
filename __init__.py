@@ -1,13 +1,15 @@
 from flask import Flask, render_template, url_for, session, redirect, request, flash, g
-from wtforms import Form, BooleanField, StringField, PasswordField, validators
-from dbconnect import connection
+from wtforms import Form, BooleanField, StringField, PasswordField, HiddenField, validators
+from .dbconnect import connection
 import datetime
 import gc
 from passlib.hash import sha256_crypt
 from flask_mail import Mail, Message
 from flask import current_app as app
 from threading import Thread
-from auth import OAuthSignIn
+from .auth import OAuthSignIn
+
+
 # import emails
 # from emails import follower_notification
 
@@ -21,9 +23,11 @@ from auth import OAuthSignIn
 
 
 app = Flask(__name__)
+# app.config.from_envvar('YOURAPPLICATION_SETTINGS')
 # app.config.from_object(__name__)
 
-app.config.from_object('config')
+# app.config.from_object('config')
+app.config.from_pyfile('config.py')
 
 mail = Mail(app)
 
@@ -47,13 +51,13 @@ def send_email(subject, sender, recipients, text_body, html_body):
 #     mail.send(msg)
 
 # function to send mails using rendered templates
-def invite_mail(invitee_email, inviter_email, team_name):
+def invite_mail(invitee_email, inviter_email, team_name, team_id):
     send_email(subject = "{0} has invited you to join workplate".format(inviter_email),
                sender = app.config['ADMINS'][0],
                recipients = invitee_email,
                text_body = render_template("inviter_email.txt", invitee_email=invitee_email, inviter_email=inviter_email),
                html_body = render_template("inviter_email.html", invitee_email=invitee_email, inviter_email=inviter_email,
-                team_name = team_name, first_name = session.get('first_name')))
+                team_name = team_name, team_id = int(team_id), first_name = session.get('first_name')))
                 # team_name = team_name, inviter_name = inviter_name))
 
 @app.route('/mail/', methods = ['GET', 'POST'])
@@ -85,6 +89,10 @@ class RegistrationForm(Form):
     confirm = PasswordField('Repeat Password')
     accept_tos = BooleanField('I accept the terms of service.', [validators.DataRequired()])
 
+    # creating two hidden fields for team name and team id
+    team_name = HiddenField("Team Name")
+    team_id = HiddenField("Team ID")
+
 
 
 @app.route('/signup/', methods=['GET', 'POST'])
@@ -98,6 +106,7 @@ def signup():
             username = email.split('@')[0]
             first_name = form.first_name.data
             last_name = form.last_name.data
+
 
             # unique username ensure
 
@@ -127,7 +136,6 @@ def signup():
                 session['team_id'] = None
                 session['team_name'] = None
 
-
                 return redirect(url_for('all_project_tasks'))
         elif request.method == 'POST':
             flash("The two passwords should match, please try again.")
@@ -136,6 +144,95 @@ def signup():
         return render_template('signup.html', form=form)
     except Exception as e:
         return(str(e))
+
+
+@app.route('/signup_via_invitation/', methods = ['GET', 'POST'])
+@app.route('/signup_via_invitation/<team_name>/<team_id>/', methods = ['GET', 'POST'])
+def signup_via_invitation(team_name = None, team_id = None):
+    try:
+        c, conn = connection()
+        form = RegistrationForm(request.form)
+        # flash(form.validate())
+
+        if request.method == 'POST' and form.validate():
+            email = form.email.data
+            username = email.split('@')[0]
+            first_name = form.first_name.data
+            last_name = form.last_name.data
+            # team_name = request.form.get('team_name')
+            # team_id = request.form.get('team_id')
+
+            # hidden fields - team name and team ID
+            # form = TestForm(request.values, fld1="foo", fld2="bar")
+            # team_name = form.team_name.data
+            # team_id = form.team_id.data
+            flash(team_name)
+            flash(team_id)
+
+            # unique username ensure
+
+            if email is None:
+                flash("Please enter an email address.")
+
+            password = sha256_crypt.encrypt(str(form.password.data))
+
+            x = c.execute("select * from users where email = (%s)", (email, ))
+
+            if int(x) > 0:
+                flash("Sorry! This email is already taken, please login if you already have an account.")
+                return render_template('signup_via_invitation.html', form=form)
+            else:
+                c.execute('''insert into users (email, username, password, first_name, last_name)
+                    values (%s, %s, %s, %s, %s);''', (email, username, password, first_name, last_name))
+                conn.commit()
+
+                # insert the user into the team
+                user_id = c.execute(''' select max(user_id) from users;''')
+                user_id = c.fetchone()[0]
+
+                # c.execute(''' insert into users_teams (user_id, team_id)
+                    # values (%s, %s);''', (user_id, team_id))
+                # conn.commit()
+
+                flash("Thanks for registering.")
+
+                gc.collect()
+                session['logged_in'] = True
+                session['username'] = username
+                session['email'] = email
+                session['first_name'] = first_name
+                session['last_name'] = last_name
+                session['team_id'] = team_id
+                session['team_name'] = team_name
+
+
+                return redirect(url_for('all_project_tasks'))
+        elif request.method == 'POST':
+            flash("The two passwords should match, please try again.")
+
+        gc.collect()
+        return render_template('signup_via_invitation.html', form=form)
+    except Exception as e:
+        return(str(e))
+    finally:
+        conn.close()
+        # insert_user_into_team(team_id)
+
+def insert_user_into_team(team_id):
+    try:
+        c, conn = connection()
+
+        # insert the user into the team
+        user_id = c.execute(''' select max(user_id) from users;''')
+        user_id = c.fetchone()[0]
+        c.execute(''' insert into users_teams (user_id, team_id)
+                    values (%s, %s);''', (user_id, team_id))
+        conn.commit()
+
+    except Exception as e:
+        flash(str(e))
+    finally:
+        conn.close()
 
 
 @app.route('/login/', methods = ['GET', 'POST'])
@@ -179,6 +276,68 @@ def login():
     except Exception as e:
         flash(str(e))
         return render_template('login.html', error=e)
+
+
+
+@app.route('/signup_invite/<team_name>/<team_id>/', methods = ['GET', 'POST'])
+def signup_invite(team_name, team_id):
+    # if method is post, check if already a member; if no then sign him in
+    # if method is not post, return the same page again
+    try:
+        c, conn = connection()
+
+        if request.method == 'POST':
+            first_name = request.form.get('first_name')
+            last_name = request.form.get('last_name')
+            email = request.form.get('email')
+            password = request.form.get('password')
+
+            if email is None:
+                    flash("Please enter an email address.")
+
+            #check email match
+            data = c.execute("select * from users where email = (%s)", (email, ))
+            if int(data) > 0:
+                flash('''Looks like your account already exists, please try logging in.''')
+
+            else:
+                # new user, sign him in: enter fname, lname, username and email into the db,
+                # encrypt password and put him in the new team
+                password = sha256_crypt.encrypt(str(password))
+                username = email.split('@')[0]
+
+                c.execute('''insert into users (email, username, password, first_name, last_name)
+                    values (%s, %s, %s, %s, %s)''', (email, username, password, first_name, last_name))
+                conn.commit()
+
+                # get the last userid
+                userid = c.execute(''' select max(user_id) from users;''')
+                user_id = c.fetchone()[0]
+
+                # put him in the new team as well
+                c.execute(''' insert into users_teams (user_id, team_id)
+                    values (%s, %s);''', (user_id, last_team_id))
+                conn.commit()
+
+
+                flash("Thanks for registering.")
+                conn.close()
+                gc.collect()
+                session['logged_in'] = True
+                session['username'] = username
+                session['email'] = email
+                session['first_name'] = first_name
+                session['last_name'] = last_name
+                session['team_id'] = team_id
+                session['team_name'] = team_name
+
+                # successfully signed in, now log him in
+                return redirect(url_for('all_project_tasks'))
+        return redirect(url_for('signup_invite', team_name = team_name, team_id = team_id))
+    except Exception as e:
+        flash(str(e))
+
+
 
 
 @app.route('/logout/')
@@ -358,9 +517,6 @@ def new_team():
             # flash(workplate_invitees)
             # flash(session['first_name'])
 
-            # send invitation mails to new_invitees
-            invite_mail(invitee_email = new_invitees, inviter_email = session['email'],
-                team_name = request.form.get('team_name'))
 
             # insert new team into DB
             user_id = username_to_userid(session.get('username'))
@@ -373,12 +529,20 @@ def new_team():
 
             c.execute(''' insert into teams (team_name, creator_id) values (%s, %s);''',
                 (request.form.get('team_name', None), user_id))
+            conn.commit()
 
             # get last team id
             last_team_id = c.execute(''' select max(team_id) from teams;''')
             last_team_id = c.fetchone()[0]
+            conn.commit()
+            conn.close()
+
+            # send invitation mails to new_invitees
+            invite_mail(invitee_email = new_invitees, inviter_email = session['email'],
+                team_name = request.form.get('team_name'), team_id = last_team_id)
 
             # insert users into the team
+            c, conn = connection()
             for email in users_in_team:
                 user_id = email_to_userid(email)
                 c.execute(''' insert into users_teams (user_id, team_id)
@@ -1129,6 +1293,11 @@ def oauth_authorize(provider):
     #     return redirect(url_for('browsebooks'))
     oauth = OAuthSignIn.get_provider(provider)
     return oauth.authorize()
+
+# defining an oauth view for logging in through an invitation (so that
+# the user can be inserted into the team he/she's invited to)
+# @app.route('/authorize/<provider>/<team_id>/')
+# def authorize_and_add_to_team(provider, team_id):
 
 
 @app.route('/callback/<provider>')

@@ -1,5 +1,5 @@
 import pymysql
-import dbconfig as dbconfig
+from . import dbconfig 
 
 # mysql --user=root -p
 def connection():

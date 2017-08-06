@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, shrink-to-fit=no, initial-scale=1">
+    <title>Workplate</title>
+    <meta name="viewport" content = "width=device-width, initial-scale=1.0">
+
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/simple-sidebar.css') }}">
+
+
+</head>
+
+<header>
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="{{url_for('homepage')}}">Workplate</a>
+        </div>
+
+
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Login</a></li>
+          </ul>
+
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+</nav>
+</header>
+
+<body>
+
+  <div class="container-fluid">
+
+         <div class="container-fluid col-md-6">
+            {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+            <div class="alert alert-warning alert-dismissible" role="alert">
+            <span type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></span>
+            {{message}}
+            </div>
+            {% endfor %}
+            {% endwith %}
+        </div>
+
+    </div>
+
+  <div class="container-fluid col-md-6 col-md-offset-3">
+
+      <h4>Sign Up</h4>
+      <hr>
+      {% from "_formhelpers.html" import render_field %}
+      <form method=post action="/signup_via_invitation/">
+        <!-- <input type="hidden" name="team_name" value="{{team_name}}" /> -->
+        <!-- <input type="hidden" name="team_id" value="{{team_id}}" /> -->
+        <div class="form-group">
+          <dl>
+          <h5>First Name</h5>
+          {{ form.first_name(class='form-control', placeholder="First Name") }}
+          <br>
+          <h5>Last Name</h5>
+          {{ form.last_name(class='form-control', placeholder="Last Name") }}
+          <br>
+          <h5>Email</h5>
+          {{ form.email(class='form-control', placeholder="youremail@example.com") }}
+          <br>
+          <h5>Password</h5>
+          {{ form.password(class='form-control', placeholder="********") }}
+          <br>
+          <h5>Confirm Password</h5>
+          {{ form.confirm(class='form-control', placeholder="********") }}
+          <!-- {{ form.team_name(class='form-control', value = team_name) }} -->
+          <!-- {{ form.team_id(class='form-control', value = team_id) }} -->
+          <br>
+          {{ render_field(form.accept_tos) }}
+          </dl>
+          <p><input type=submit value=Signup class="btn btn-success"></p>
+      </form>
+
+      {% if error %}
+      <p class="error"><strong>Error:</strong> {{ error }}</p>
+      {% endif %}
+
+    <div class="container">
+       <br>
+      {% for paragraph in Body_info %}
+      <p>{{ paragraph }}</p>
+      {% endfor %}
+      </div>
+      </div>
+
+    </div>
+
+    <!-- <div id="sign-in">
+        <h1>Sign In</h1>
+        <p>
+        <a href={{ url_for('oauth_authorize', provider='google') }}>
+        Login with Google</a>
+    </div> -->
+
+    <!-- jQuery -->
+    <script src="{{url_for('static', filename='js/jquery.js') }}"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="{{url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+</body>
+
+
+
+
+
+
