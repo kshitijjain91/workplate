@@ -283,6 +283,8 @@ def login():
 def signup_invite(team_name, team_id):
     # if method is post, check if already a member; if no then sign him in
     # if method is not post, return the same page again
+    flash(team_name)
+    flash(team_id)
     try:
         c, conn = connection()
 
@@ -316,7 +318,7 @@ def signup_invite(team_name, team_id):
 
                 # put him in the new team as well
                 c.execute(''' insert into users_teams (user_id, team_id)
-                    values (%s, %s);''', (user_id, last_team_id))
+                    values (%s, %s);''', (user_id, team_id))
                 conn.commit()
 
 
@@ -333,7 +335,8 @@ def signup_invite(team_name, team_id):
 
                 # successfully signed in, now log him in
                 return redirect(url_for('all_project_tasks'))
-        return redirect(url_for('signup_invite', team_name = team_name, team_id = team_id))
+
+        return render_template("signup_invite.html", team_name = team_name, team_id = team_id)
     except Exception as e:
         flash(str(e))
 
@@ -505,6 +508,7 @@ def new_team():
             # divide invitees into two lists - 1) already on workplate and 2) new ones
 
             for email_id in invitee_list:
+                # new_invitees.append(email_id)
                 c, conn = connection()
                 x = c.execute("select * from users where email = (%s)", (email_id, ))
 
