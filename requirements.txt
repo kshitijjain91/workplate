@@ -18,6 +18,6 @@ pyparsing==2.2.0
 rauth==0.7.3
 requests==2.18.1
 six==1.10.0
-urllib3==1.21.1
+urllib3==1.26.5
 Werkzeug==0.12.1
 WTForms==2.1
